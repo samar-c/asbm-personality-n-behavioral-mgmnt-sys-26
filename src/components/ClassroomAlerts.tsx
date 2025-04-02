@@ -1,215 +1,220 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { AlertCircle, Bell, Check, Info, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Bell, Check, Clock, ExternalLink, X } from 'lucide-react';
-import { useNotifications } from '@/context/NotificationContext';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter,
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 
-interface ClassroomAlert {
+interface Alert {
   id: string;
+  type: 'info' | 'warning' | 'success' | 'error';
   title: string;
-  description: string;
+  message: string;
   course: string;
-  deadline?: Date;
-  type: 'assignment' | 'announcement' | 'reminder' | 'warning';
-  createdAt: Date;
+  timestamp: Date;
+  read: boolean;
 }
 
-const mockAlerts: ClassroomAlert[] = [
+const mockAlerts: Alert[] = [
   {
     id: '1',
-    title: 'New Assignment: Case Study Analysis',
-    description: 'Complete the case study analysis for next week's class.',
-    course: 'Business Ethics',
-    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    type: 'assignment',
-    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    type: 'warning',
+    title: 'Assignment Due Soon',
+    message: 'Your Python programming assignment is due in 24 hours.',
+    course: 'Introduction to Programming',
+    timestamp: new Date(new Date().getTime() - 30 * 60000),
+    read: false
   },
   {
     id: '2',
-    title: 'Reminder: Group Project Meeting',
-    description: 'Group meeting at 3 PM in Room 204 for project discussion.',
-    course: 'Marketing Management',
-    deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    type: 'reminder',
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    type: 'info',
+    title: 'New Course Material Available',
+    message: 'New reading materials for Business Analytics have been uploaded.',
+    course: 'Business Analytics',
+    timestamp: new Date(new Date().getTime() - 2 * 3600000),
+    read: false
   },
   {
     id: '3',
-    title: 'Low Attendance Warning',
-    description: 'Your attendance in this course has fallen below 75%. Please ensure regular attendance.',
-    course: 'Financial Accounting',
-    type: 'warning',
-    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    type: 'success',
+    title: 'Assignment Graded',
+    message: 'Your Marketing Strategy assignment has been graded. You received an A!',
+    course: 'Marketing Fundamentals',
+    timestamp: new Date(new Date().getTime() - 5 * 3600000),
+    read: true
   },
   {
     id: '4',
-    title: 'Class Canceled Tomorrow',
-    description: 'Tomorrow's class is canceled due to faculty meeting. Will be rescheduled.',
-    course: 'Business Law',
-    type: 'announcement',
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-  },
+    type: 'error',
+    title: 'Attendance Warning',
+    message: 'Your attendance in Financial Accounting is below 75%. Please improve your attendance.',
+    course: 'Financial Accounting',
+    timestamp: new Date(new Date().getTime() - 1 * 86400000),
+    read: false
+  }
 ];
 
-const alertIcons = {
-  assignment: Clock,
-  announcement: Bell,
-  reminder: Bell,
-  warning: AlertTriangle,
-};
-
-const alertColors = {
-  assignment: 'bg-blue-100 text-blue-800 border-blue-200',
-  announcement: 'bg-purple-100 text-purple-800 border-purple-200',
-  reminder: 'bg-amber-100 text-amber-800 border-amber-200',
-  warning: 'bg-red-100 text-red-800 border-red-200',
-};
-
-const alertBadgeVariants = {
-  assignment: 'bg-blue-500',
-  announcement: 'bg-purple-500',
-  reminder: 'bg-amber-500',
-  warning: 'bg-red-500',
-};
-
 const ClassroomAlerts = () => {
-  const [alerts, setAlerts] = useState<ClassroomAlert[]>(mockAlerts);
-  const { addNotification } = useNotifications();
+  const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
+  const [showAll, setShowAll] = useState(false);
   
-  const dismissAlert = (id: string) => {
-    setAlerts(alerts.filter(alert => alert.id !== id));
+  const unreadCount = alerts.filter(alert => !alert.read).length;
+  const displayAlerts = showAll ? alerts : alerts.slice(0, 3);
+  
+  const markAsRead = (alertId: string) => {
+    setAlerts(alerts.map(alert => 
+      alert.id === alertId ? { ...alert, read: true } : alert
+    ));
   };
   
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      return 'Just now';
-    } else if (diffInHours === 1) {
-      return '1 hour ago';
-    } else if (diffInHours < 24) {
-      return `${diffInHours} hours ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays === 1) {
-        return 'Yesterday';
-      } else {
-        return `${diffInDays} days ago`;
-      }
+  const dismissAlert = (alertId: string) => {
+    setAlerts(alerts.filter(alert => alert.id !== alertId));
+  };
+  
+  const markAllAsRead = () => {
+    setAlerts(alerts.map(alert => ({ ...alert, read: true })));
+  };
+  
+  const getAlertIcon = (type: Alert['type']) => {
+    switch (type) {
+      case 'info': return <Info className="h-5 w-5 text-blue-500" />;
+      case 'warning': return <AlertCircle className="h-5 w-5 text-amber-500" />;
+      case 'success': return <Check className="h-5 w-5 text-green-500" />;
+      case 'error': return <AlertCircle className="h-5 w-5 text-red-500" />;
     }
   };
   
-  const acknowledgeAlert = (alert: ClassroomAlert) => {
-    dismissAlert(alert.id);
+  const getTimeString = (date: Date) => {
+    const minutes = Math.floor((new Date().getTime() - date.getTime()) / 60000);
     
-    // Add a notification
-    addNotification({
-      title: `Acknowledged: ${alert.title}`,
-      message: `You've acknowledged the alert from ${alert.course}`,
-      type: 'success',
-    });
+    if (minutes < 60) {
+      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    }
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    }
+    
+    const days = Math.floor(hours / 24);
+    return `${days} day${days !== 1 ? 's' : ''} ago`;
   };
-  
+
   return (
-    <Card className="animate-fade-in">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium">Classroom Alerts</CardTitle>
-        {alerts.length > 0 && (
-          <Badge variant="outline" className="bg-primary text-primary-foreground px-2 py-1 animate-pulse">
-            {alerts.length} New
+    <Card className="w-full shadow-lg animate-fade-in">
+      <CardHeader className="bg-primary/5 flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-lg flex items-center">
+            <Bell className="mr-2 h-5 w-5" />
+            Classroom Alerts
+          </CardTitle>
+          <CardDescription>Stay updated with your courses</CardDescription>
+        </div>
+        {unreadCount > 0 && (
+          <Badge variant="secondary" className="animate-pulse">
+            {unreadCount} unread
           </Badge>
         )}
       </CardHeader>
-      <CardContent className="space-y-4">
-        {alerts.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <Bell className="h-12 w-12 mx-auto opacity-20 mb-2" />
-            <p>No active alerts</p>
-          </div>
-        ) : (
-          alerts.map((alert) => {
-            const AlertIcon = alertIcons[alert.type];
-            
-            return (
-              <div 
+      
+      <CardContent className="pt-6 px-6 max-h-[500px] overflow-y-auto">
+        {displayAlerts.length > 0 ? (
+          <div className="space-y-4">
+            {displayAlerts.map((alert) => (
+              <motion.div 
                 key={alert.id}
-                className={cn(
-                  "p-4 border rounded-md relative transition-all duration-300 hover:shadow-md",
-                  alertColors[alert.type],
-                  "staggered-item"
-                )}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.3 }}
+                className={`p-4 rounded-lg border ${
+                  alert.read ? 'bg-muted/30' : 'bg-card shadow-md'
+                }`}
               >
-                <div className="flex items-start gap-3">
-                  <div className={cn("p-2 rounded-full", alertBadgeVariants[alert.type], "text-white")}>
-                    <AlertIcon className="h-4 w-4" />
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium text-sm">{alert.title}</h4>
-                        <p className="text-sm mt-1">{alert.description}</p>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4">
+                    <div className="mt-0.5">{getAlertIcon(alert.type)}</div>
+                    <div>
+                      <div className="flex items-center">
+                        <h4 className={`font-medium ${!alert.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {alert.title}
+                        </h4>
+                        {!alert.read && (
+                          <span className="ml-2 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        )}
                       </div>
+                      <p className={`text-sm ${!alert.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {alert.message}
+                      </p>
+                      <div className="mt-1 flex items-center text-xs text-muted-foreground">
+                        <Badge variant="outline" className="mr-2 text-xs">
+                          {alert.course}
+                        </Badge>
+                        <span>{getTimeString(alert.timestamp)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-1">
+                    {!alert.read && (
                       <Button 
-                        variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 rounded-full -mt-1 -mr-1 text-muted-foreground"
-                        onClick={() => dismissAlert(alert.id)}
+                        variant="ghost" 
+                        className="h-6 w-6" 
+                        onClick={() => markAsRead(alert.id)}
                       >
-                        <X className="h-4 w-4" />
+                        <Check className="h-3 w-3" />
+                        <span className="sr-only">Mark as read</span>
                       </Button>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
-                      <Badge variant="outline" className="font-normal">
-                        {alert.course}
-                      </Badge>
-                      
-                      <span className="text-muted-foreground">
-                        {formatTimeAgo(alert.createdAt)}
-                      </span>
-                      
-                      {alert.deadline && (
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Due {format(alert.deadline, 'MMM d')}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2 mt-3">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="h-7 text-xs transition-all duration-300 hover:bg-white/50"
-                        onClick={() => acknowledgeAlert(alert)}
-                      >
-                        <Check className="h-3 w-3 mr-1" />
-                        Acknowledge
-                      </Button>
-                      
-                      {alert.type === 'assignment' && (
-                        <Button 
-                          size="sm" 
-                          className="h-7 text-xs transition-all duration-300 hover:bg-primary/90"
-                        >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          View Details
-                        </Button>
-                      )}
-                    </div>
+                    )}
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-6 w-6" 
+                      onClick={() => dismissAlert(alert.id)}
+                    >
+                      <X className="h-3 w-3" />
+                      <span className="sr-only">Dismiss</span>
+                    </Button>
                   </div>
                 </div>
-              </div>
-            );
-          })
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-8 text-center text-muted-foreground">
+            <Bell className="mx-auto h-12 w-12 mb-3 opacity-20" />
+            <p>No alerts at the moment</p>
+          </div>
         )}
       </CardContent>
+      
+      <CardFooter className="flex justify-between bg-muted/20 border-t">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={markAllAsRead}
+          disabled={!alerts.some(alert => !alert.read)}
+        >
+          Mark all as read
+        </Button>
+        {alerts.length > 3 && (
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Show less' : `Show all (${alerts.length})`}
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };

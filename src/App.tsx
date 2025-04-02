@@ -30,15 +30,27 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <NotificationProvider>
-              <AppRoutes />
-            </NotificationProvider>
-          </AuthProvider>
-        </BrowserRouter>
+        <div className="relative min-h-screen">
+          {/* Global background image with overlay */}
+          <div className="fixed inset-0 -z-10">
+            <img 
+              src="/lovable-uploads/7afce98d-f21c-40c0-a054-0b0431ca10c9.png" 
+              alt="ASBM University Campus" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background to-background/5"></div>
+          </div>
+          
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <NotificationProvider>
+                <AppRoutes />
+              </NotificationProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+import StudentManager from '@/components/StudentManager';
 import { 
   BarChart, Search, Plus, UserPlus, FileText, Filter, Download, ArrowUp, ArrowDown, 
   AlertTriangle, CheckCircle, User, UserCheck, Mail, Calendar, School,
@@ -119,77 +121,124 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <img 
-          src="/lovable-uploads/7afce98d-f21c-40c0-a054-0b0431ca10c9.png" 
-          alt="ASBM University Campus" 
-          className="w-full h-full object-cover opacity-20" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-background/5"></div>
-      </div>
-      
       <Navigation />
       
       <main className="flex-1 py-6 px-4 md:px-6 lg:px-8 animate-fade-in">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <motion.div 
+            className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
               <p className="text-muted-foreground">Manage student records and monitor behavior</p>
             </div>
             <div className="mt-4 sm:mt-0 flex gap-2">
-              <Button className="transition-all duration-300 hover:scale-105">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add Student
-              </Button>
-              <Button variant="outline" className="transition-all duration-300 hover:bg-primary hover:text-primary-foreground">
-                <FileText className="mr-2 h-4 w-4" />
-                Generate Report
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button className="transition-all duration-300">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Add Student
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant="outline" className="transition-all duration-300 hover:bg-primary hover:text-primary-foreground">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generate Report
+                </Button>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
           
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatsCard 
-              icon={User} 
-              title="Total Students" 
-              value={mockStudents.length} 
-              description="Active students in the system"
-              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            />
-            <StatsCard 
-              icon={AlertTriangle} 
-              title="At-Risk Students" 
-              value={atRiskCount} 
-              description={`${Math.round((atRiskCount / mockStudents.length) * 100)}% of total students`}
-              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            />
-            <StatsCard 
-              icon={Brain} 
-              title="Behavior Incidents" 
-              value={behaviorIncidentsCount} 
-              description="Total incidents reported"
-              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            />
-            <StatsCard 
-              icon={UserCheck} 
-              title="Average Attendance" 
-              value={`${avgAttendance}%`} 
-              description={avgAttendance >= 80 ? "Good overall attendance" : "Needs improvement"}
-              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <StatsCard 
+                icon={User} 
+                title="Total Students" 
+                value={mockStudents.length} 
+                description="Active students in the system"
+                className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <StatsCard 
+                icon={AlertTriangle} 
+                title="At-Risk Students" 
+                value={atRiskCount} 
+                description={`${Math.round((atRiskCount / mockStudents.length) * 100)}% of total students`}
+                className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+            >
+              <StatsCard 
+                icon={Brain} 
+                title="Behavior Incidents" 
+                value={behaviorIncidentsCount} 
+                description="Total incidents reported"
+                className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
+            >
+              <StatsCard 
+                icon={UserCheck} 
+                title="Average Attendance" 
+                value={`${avgAttendance}%`} 
+                description={avgAttendance >= 80 ? "Good overall attendance" : "Needs improvement"}
+                className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              />
+            </motion.div>
           </div>
           
-          <Tabs defaultValue="students" className="w-full">
+          <Tabs defaultValue="student-manager" className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="students" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Students</TabsTrigger>
-              <TabsTrigger value="teachers" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Faculty</TabsTrigger>
-              <TabsTrigger value="reports" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Reports</TabsTrigger>
+              <TabsTrigger value="student-manager" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Student Manager
+              </TabsTrigger>
+              <TabsTrigger value="directory" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Directory
+              </TabsTrigger>
+              <TabsTrigger value="faculty" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Faculty
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Reports
+              </TabsTrigger>
             </TabsList>
             
-            {/* Students Tab */}
-            <TabsContent value="students" className="animate-fade-in">
+            {/* Student Manager Tab */}
+            <TabsContent value="student-manager" className="animate-fade-in">
+              <StudentManager />
+            </TabsContent>
+            
+            {/* Students Directory Tab */}
+            <TabsContent value="directory" className="animate-fade-in">
               <Card>
                 <CardHeader>
                   <CardTitle>Student Directory</CardTitle>
@@ -353,8 +402,8 @@ const AdminPanel = () => {
               </Card>
             </TabsContent>
             
-            {/* Teachers Tab */}
-            <TabsContent value="teachers" className="animate-fade-in">
+            {/* Faculty Tab */}
+            <TabsContent value="faculty" className="animate-fade-in">
               <Card>
                 <CardHeader>
                   <CardTitle>Faculty Directory</CardTitle>
@@ -414,7 +463,10 @@ const AdminPanel = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Student Behavior Report</h3>
                           <p className="text-sm text-muted-foreground">Comprehensive behavior analysis</p>
@@ -423,9 +475,12 @@ const AdminPanel = () => {
                           <FileText className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
-                      </div>
+                      </motion.div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Attendance Report</h3>
                           <p className="text-sm text-muted-foreground">Student attendance trends</p>
@@ -434,9 +489,12 @@ const AdminPanel = () => {
                           <Calendar className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
-                      </div>
+                      </motion.div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Course Performance</h3>
                           <p className="text-sm text-muted-foreground">Academic performance by course</p>
@@ -445,9 +503,12 @@ const AdminPanel = () => {
                           <School className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
-                      </div>
+                      </motion.div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Behavioral Incident Log</h3>
                           <p className="text-sm text-muted-foreground">Complete incident history</p>
@@ -456,7 +517,7 @@ const AdminPanel = () => {
                           <Brain className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
-                      </div>
+                      </motion.div>
                     </div>
                   </CardContent>
                 </Card>
@@ -468,7 +529,10 @@ const AdminPanel = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Monthly Behavior Summary</h3>
                           <p className="text-xs text-muted-foreground">Generated on 15 Oct 2023</p>
@@ -477,9 +541,12 @@ const AdminPanel = () => {
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
-                      </div>
+                      </motion.div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Semester Attendance Report</h3>
                           <p className="text-xs text-muted-foreground">Generated on 30 Sep 2023</p>
@@ -488,9 +555,12 @@ const AdminPanel = () => {
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
-                      </div>
+                      </motion.div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md">
+                      <motion.div 
+                        className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md"
+                        whileHover={{ scale: 1.02 }}
+                      >
                         <div>
                           <h3 className="font-medium">Academic Performance Trends</h3>
                           <p className="text-xs text-muted-foreground">Generated on 15 Sep 2023</p>
@@ -499,7 +569,7 @@ const AdminPanel = () => {
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
-                      </div>
+                      </motion.div>
                     </div>
                     
                     <div className="mt-6">

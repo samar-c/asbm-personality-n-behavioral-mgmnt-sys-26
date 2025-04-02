@@ -5,6 +5,7 @@ import Dashboard from '@/pages/Dashboard';
 import Course from '@/pages/Course';
 import AdminPanel from '@/pages/AdminPanel';
 import Calendar from '@/pages/Calendar';
+import Faculty from '@/pages/Faculty';
 import Login from '@/pages/Login';
 import { useAuth } from '@/context/AuthContext';
 
@@ -43,6 +44,10 @@ export const routes = [
       {
         path: 'calendar',
         element: <Calendar />,
+      },
+      {
+        path: 'faculty',
+        element: <Faculty />,
       },
     ],
   },
