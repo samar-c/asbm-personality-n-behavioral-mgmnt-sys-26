@@ -120,47 +120,47 @@ const StudentManager: React.FC = () => {
     setIsAddStudentOpen(false);
   };
 
-    const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditedStudent({ ...editedStudent, [e.target.name]: e.target.value });
-    };
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedStudent({ ...editedStudent, [e.target.name]: e.target.value });
+  };
 
-    const handleOpenEditModal = (studentId: string) => {
-        const studentToEdit = students.find(student => student.id === studentId);
-        if (studentToEdit) {
-            setEditedStudent({ ...studentToEdit });
-            setSelectedStudentId(studentId);
-            setIsEditModalOpen(true);
-        }
-    };
+  const handleOpenEditModal = (studentId: string) => {
+    const studentToEdit = students.find(student => student.id === studentId);
+    if (studentToEdit) {
+      setEditedStudent({ ...studentToEdit });
+      setSelectedStudentId(studentId);
+      setIsEditModalOpen(true);
+    }
+  };
 
-    const handleSaveEditedStudent = () => {
-        const updatedStudents = students.map(student => {
-            if (student.id === editedStudent.id) {
-                return { ...editedStudent };
-            }
-            return student;
-        });
-        setStudents(updatedStudents);
-        setIsEditModalOpen(false);
-        setSelectedStudentId(null);
-    };
+  const handleSaveEditedStudent = () => {
+    const updatedStudents = students.map(student => {
+      if (student.id === editedStudent.id) {
+        return { ...editedStudent };
+      }
+      return student;
+    });
+    setStudents(updatedStudents);
+    setIsEditModalOpen(false);
+    setSelectedStudentId(null);
+  };
 
-    const handleDeleteStudent = (studentId: string) => {
-        setSelectedStudentId(studentId);
-        setIsDeleteConfirmationOpen(true);
-    };
+  const handleDeleteStudent = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setIsDeleteConfirmationOpen(true);
+  };
 
-    const confirmDeleteStudent = () => {
-        const updatedStudents = students.filter(student => student.id !== selectedStudentId);
-        setStudents(updatedStudents);
-        setIsDeleteConfirmationOpen(false);
-        setSelectedStudentId(null);
-    };
+  const confirmDeleteStudent = () => {
+    const updatedStudents = students.filter(student => student.id !== selectedStudentId);
+    setStudents(updatedStudents);
+    setIsDeleteConfirmationOpen(false);
+    setSelectedStudentId(null);
+  };
 
-    const cancelDeleteStudent = () => {
-        setIsDeleteConfirmationOpen(false);
-        setSelectedStudentId(null);
-    };
+  const cancelDeleteStudent = () => {
+    setIsDeleteConfirmationOpen(false);
+    setSelectedStudentId(null);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -215,7 +215,7 @@ const StudentManager: React.FC = () => {
             </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="primary">Add Student</Button>
+                <Button variant="default">Add Student</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
@@ -354,90 +354,92 @@ const StudentManager: React.FC = () => {
           )}
         </motion.div>
       </main>
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Edit Student</DialogTitle>
-                    <DialogDescription>
-                        Make changes to the student's details.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">
-                            Name
-                        </Label>
-                        <Input type="text" id="name" name="name" value={editedStudent.name} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="rollNumber" className="text-right">
-                            Roll Number
-                        </Label>
-                        <Input type="text" id="rollNumber" name="rollNumber" value={editedStudent.rollNumber} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="course" className="text-right">
-                            Course
-                        </Label>
-                        <Input type="text" id="course" name="course" value={editedStudent.course} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="semester" className="text-right">
-                            Semester
-                        </Label>
-                        <Input type="number" id="semester" name="semester" value={editedStudent.semester} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="attendance" className="text-right">
-                            Attendance
-                        </Label>
-                        <Input type="number" id="attendance" name="attendance" value={editedStudent.attendance} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="behaviorScore" className="text-right">
-                            Behavior Score
-                        </Label>
-                        <Input type="number" id="behaviorScore" name="behaviorScore" value={editedStudent.behaviorScore} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="academicScore" className="text-right">
-                            Academic Score
-                        </Label>
-                        <Input type="number" id="academicScore" name="academicScore" value={editedStudent.academicScore} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="avatar" className="text-right">
-                            Avatar URL
-                        </Label>
-                        <Input type="text" id="avatar" name="avatar" value={editedStudent.avatar} onChange={handleEditInputChange} className="col-span-3" />
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => setIsEditModalOpen(false)}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" onClick={handleSaveEditedStudent}>Save Changes</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-        <Dialog open={isDeleteConfirmationOpen} onOpenChange={setIsDeleteConfirmationOpen}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Delete Confirmation</DialogTitle>
-                    <DialogDescription>
-                        Are you sure you want to delete this student? This action cannot be undone.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={cancelDeleteStudent}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" variant="destructive" onClick={confirmDeleteStudent}>
-                        Delete
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+      
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Student</DialogTitle>
+            <DialogDescription>
+              Make changes to the student's details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input type="text" id="name" name="name" value={editedStudent.name} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="rollNumber" className="text-right">
+                Roll Number
+              </Label>
+              <Input type="text" id="rollNumber" name="rollNumber" value={editedStudent.rollNumber} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="course" className="text-right">
+                Course
+              </Label>
+              <Input type="text" id="course" name="course" value={editedStudent.course} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="semester" className="text-right">
+                Semester
+              </Label>
+              <Input type="number" id="semester" name="semester" value={editedStudent.semester} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="attendance" className="text-right">
+                Attendance
+              </Label>
+              <Input type="number" id="attendance" name="attendance" value={editedStudent.attendance} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="behaviorScore" className="text-right">
+                Behavior Score
+              </Label>
+              <Input type="number" id="behaviorScore" name="behaviorScore" value={editedStudent.behaviorScore} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="academicScore" className="text-right">
+                Academic Score
+              </Label>
+              <Input type="number" id="academicScore" name="academicScore" value={editedStudent.academicScore} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="avatar" className="text-right">
+                Avatar URL
+              </Label>
+              <Input type="text" id="avatar" name="avatar" value={editedStudent.avatar} onChange={handleEditInputChange} className="col-span-3" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" onClick={handleSaveEditedStudent}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isDeleteConfirmationOpen} onOpenChange={setIsDeleteConfirmationOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Confirmation</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this student? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={cancelDeleteStudent}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="destructive" onClick={confirmDeleteStudent}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

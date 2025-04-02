@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface NavigationHeaderProps {
+export interface NavigationHeaderProps {
   onMenuToggle: () => void;
 }
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, User, BookOpen, BarChart2, AlertTriangle, CheckCircle, Award, Brain } from 'lucide-react';
@@ -16,9 +15,41 @@ import { useAuth } from '@/context/AuthContext';
 import { Radar } from 'recharts';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
-// Extending the mock student type with additional properties needed
-// This ensures TypeScript doesn't complain about missing properties
-const extendedMockStudents = mockStudents.map(student => ({
+interface BehavioralIncident {
+  id: string;
+  type: string;
+  description: string;
+  date: string;
+  teacher: string;
+  action: string;
+}
+
+interface ExtendedStudent {
+  id: string;
+  name: string;
+  rollNumber: string;
+  course: string;
+  semester: number;
+  attendance: number;
+  behaviorScore: number;
+  academicScore: number;
+  avatar: string;
+  email: string;
+  participationScore: number;
+  personalityTraits: {
+    openness: number;
+    conscientiousness: number;
+    extraversion: number;
+    agreeableness: number;
+    neuroticism: number;
+  };
+  counselorNotes: string;
+  strengths: string[];
+  areasOfImprovement: string[];
+  behavioralIncidents: BehavioralIncident[];
+}
+
+const extendedMockStudents: ExtendedStudent[] = mockStudents.map(student => ({
   ...student,
   email: `${student.name.toLowerCase().replace(' ', '.')}@asbm.ac.in`,
   participationScore: Math.floor(Math.random() * 30) + 70,
@@ -32,21 +63,14 @@ const extendedMockStudents = mockStudents.map(student => ({
   counselorNotes: "Student shows good progress in academics but needs to improve participation.",
   strengths: ["Critical thinking", "Time management", "Research skills"],
   areasOfImprovement: ["Public speaking", "Group collaboration", "Practical application"],
+  behavioralIncidents: (student.behavioralIncidents || []).map((incident, i) => ({
+    ...incident,
+    id: `incident-${i}`,
+    teacher: "Prof. Sharma",
+    action: "Verbal warning and counseling session"
+  })),
 }));
 
-// Update the behavioral incidents to include teacher and action
-extendedMockStudents.forEach(student => {
-  if (student.behavioralIncidents) {
-    student.behavioralIncidents = student.behavioralIncidents.map((incident, i) => ({
-      ...incident,
-      id: `incident-${i}`,
-      teacher: "Prof. Sharma",
-      action: "Verbal warning and counseling session"
-    }));
-  }
-});
-
-// Component for rendering a metric with icon and value
 const MetricCard = ({ icon: Icon, label, value, colorClass = "text-primary" }) => (
   <div className="flex items-center gap-3 p-4 bg-background rounded-md border">
     <div className={`p-2 rounded-full ${colorClass} bg-opacity-10`}>
@@ -65,10 +89,8 @@ const StudentDetail = () => {
   const [notes, setNotes] = React.useState("");
   const [notifyParents, setNotifyParents] = React.useState(false);
   
-  // Find the student by ID from our extended mock data
   const student = extendedMockStudents.find(s => s.id === studentId) || extendedMockStudents[0];
   
-  // Format data for radar chart
   const personalityChartData = [
     { subject: 'Openness', A: student.personalityTraits.openness },
     { subject: 'Conscientiousness', A: student.personalityTraits.conscientiousness },
@@ -77,17 +99,13 @@ const StudentDetail = () => {
     { subject: 'Neuroticism', A: student.personalityTraits.neuroticism },
   ];
   
-  // Track if the student is at risk
   const isAtRisk = student.attendance < 75 || student.behaviorScore < 70;
   
   React.useEffect(() => {
-    // Initialize notes from the student data
     setNotes(student.counselorNotes || "");
   }, [student.id]);
   
   const handleSaveNotes = () => {
-    // In a real app, this would save to the backend
-    // For now, we'll just show a success message
     alert("Notes saved successfully!");
   };
 
@@ -120,7 +138,6 @@ const StudentDetail = () => {
             )}
           </div>
           
-          {/* Student Overview */}
           <Card className="mb-6">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-6">
@@ -159,7 +176,6 @@ const StudentDetail = () => {
             </CardContent>
           </Card>
           
-          {/* Tabs for different aspects of the student */}
           <Tabs defaultValue="behavior">
             <TabsList className="mb-4">
               <TabsTrigger value="behavior">Behavior Analysis</TabsTrigger>
@@ -168,7 +184,6 @@ const StudentDetail = () => {
               <TabsTrigger value="notes">Counselor Notes</TabsTrigger>
             </TabsList>
             
-            {/* Behavior Analysis Tab */}
             <TabsContent value="behavior">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -241,7 +256,6 @@ const StudentDetail = () => {
               </div>
             </TabsContent>
             
-            {/* Personality Profile Tab */}
             <TabsContent value="personality">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -312,7 +326,6 @@ const StudentDetail = () => {
               </div>
             </TabsContent>
             
-            {/* Behavioral Incidents Tab */}
             <TabsContent value="incidents">
               <Card>
                 <CardHeader>
@@ -349,7 +362,6 @@ const StudentDetail = () => {
               </Card>
             </TabsContent>
             
-            {/* Counselor Notes Tab */}
             <TabsContent value="notes">
               <Card>
                 <CardHeader>
