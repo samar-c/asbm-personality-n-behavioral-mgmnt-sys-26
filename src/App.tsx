@@ -8,11 +8,12 @@ import { BrowserRouter, Routes, Route, useRoutes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { routes } from "./routes";
+import { AnimatePresence } from "framer-motion";
 
 // Custom router component that uses the routes configuration
 const AppRoutes: React.FC = () => {
   const routeElements = useRoutes(routes);
-  return routeElements;
+  return <AnimatePresence mode="wait">{routeElements}</AnimatePresence>;
 };
 
 // Create a Query Client for React Query

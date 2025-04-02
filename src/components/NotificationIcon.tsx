@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { motion } from 'framer-motion';
 
 const NotificationItem: React.FC<{ notification: Notification, onRead: () => void }> = ({ 
   notification, 
@@ -72,12 +74,22 @@ const NotificationIcon: React.FC = () => {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="default" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 animate-pulse"
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 20
+              }}
             >
-              {unreadCount}
-            </Badge>
+              <Badge 
+                variant="default" 
+                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 animate-pulse"
+              >
+                {unreadCount}
+              </Badge>
+            </motion.div>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -104,7 +116,7 @@ const NotificationIcon: React.FC = () => {
               <p>No notifications</p>
             </div>
           ) : (
-            notifications.map(notification => (
+            notifications.map((notification) => (
               <React.Fragment key={notification.id}>
                 <NotificationItem 
                   notification={notification}
