@@ -1,10 +1,26 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { 
+  BarChart, Search, Plus, UserPlus, FileText, Filter, Download, ArrowUp, ArrowDown, 
+  AlertTriangle, CheckCircle, User, UserCheck, Mail, Calendar, School,
+  Brain
+} from 'lucide-react';
+import { mockStudents, mockTeachers } from '@/utils/mockData';
+import { useAuth } from '@/context/AuthContext';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { 
   Table, 
   TableBody, 
@@ -12,289 +28,351 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table';
-import { mockStudents, mockTeachers } from '@/utils/mockData';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Users, BarChart2, FileText, UserCheck, AlertCircle, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/context/AuthContext';
+} from "@/components/ui/table";
 
-// Mock data for charts
-const departmentalDistribution = [
-  { name: 'Computer Science', value: 120 },
-  { name: 'Business Admin', value: 150 },
-  { name: 'Finance', value: 100 },
-  { name: 'Marketing', value: 80 },
-  { name: 'Human Resources', value: 60 },
-];
+// Component for stats card with icon
+const StatsCard = ({ icon: Icon, title, value, description, className }) => (
+  <Card className={className}>
+    <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <Icon className="h-4 w-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+);
 
-const behavioralTrends = [
-  { month: 'Aug', incidents: 45 },
-  { month: 'Sep', incidents: 38 },
-  { month: 'Oct', incidents: 32 },
-  { month: 'Nov', incidents: 25 },
-  { month: 'Dec', incidents: 20 },
-  { month: 'Jan', incidents: 18 },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-const AdminPanel: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+const AdminPanel = () => {
   const { userRole } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [courseFilter, setCourseFilter] = useState('All');
   
-  const filteredStudents = mockStudents.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.course.toLowerCase().includes(searchTerm.toLowerCase())
+  // Sort and filter students
+  const filteredStudents = mockStudents
+    .filter(student => {
+      const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCourse = courseFilter === 'All' || student.course === courseFilter;
+      return matchesSearch && matchesCourse;
+    })
+    .sort((a, b) => {
+      let fieldA = a[sortField];
+      let fieldB = b[sortField];
+      
+      if (typeof fieldA === 'string') {
+        fieldA = fieldA.toLowerCase();
+        fieldB = fieldB.toLowerCase();
+      }
+      
+      if (sortDirection === 'asc') {
+        return fieldA > fieldB ? 1 : -1;
+      } else {
+        return fieldA < fieldB ? 1 : -1;
+      }
+    });
+    
+  // Get unique courses for filter
+  const courses = ['All', ...new Set(mockStudents.map(student => student.course))];
+  
+  // Calculate stats
+  const atRiskCount = mockStudents.filter(student => 
+    student.attendance < 75 || student.behaviorScore < 70
+  ).length;
+  
+  const behaviorIncidentsCount = mockStudents.reduce(
+    (count, student) => count + student.behavioralIncidents.length, 0
   );
   
-  const filteredTeachers = mockTeachers.filter(teacher =>
-    teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    teacher.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    teacher.subject.toLowerCase().includes(searchTerm.toLowerCase())
+  const avgAttendance = Math.round(
+    mockStudents.reduce((sum, student) => sum + student.attendance, 0) / mockStudents.length
   );
   
-  const handleSelectStudent = (studentId: string) => {
-    setSelectedStudents(prev => 
-      prev.includes(studentId)
-        ? prev.filter(id => id !== studentId)
-        : [...prev, studentId]
-    );
-  };
-  
-  const handleSelectAll = () => {
-    if (selectedStudents.length === filteredStudents.length) {
-      setSelectedStudents([]);
+  // Toggle sort direction or change sort field
+  const handleSort = (field) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSelectedStudents(filteredStudents.map(student => student.id));
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
   
+  // Render sort arrow if this field is being sorted
+  const SortIndicator = ({ field }) => {
+    if (field !== sortField) return null;
+    return sortDirection === 'asc' ? 
+      <ArrowUp className="h-4 w-4" /> : 
+      <ArrowDown className="h-4 w-4" />;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navigation userRole="admin" />
-      <main className="flex-1 p-6 bg-gray-50">
+      <Navigation />
+      
+      <main className="flex-1 py-6 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Manage students, teachers, and analyze behavioral data</p>
+              <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
+              <p className="text-muted-foreground">Manage student records and monitor behavior</p>
             </div>
-            <div className="mt-4 sm:mt-0 flex gap-4">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="w-full sm:w-[300px] pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+            <div className="mt-4 sm:mt-0 flex gap-2">
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
+              <Button variant="outline">
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Report
+              </Button>
             </div>
           </div>
-
-          {/* Overview Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Students</p>
-                    <h3 className="text-2xl font-bold">510</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Faculty Members</p>
-                    <h3 className="text-2xl font-bold">48</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                    <User className="h-6 w-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Behavioral Reports</p>
-                    <h3 className="text-2xl font-bold">189</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-amber-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Critical Cases</p>
-                    <h3 className="text-2xl font-bold">12</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
-                    <AlertCircle className="h-6 w-6 text-red-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <StatsCard 
+              icon={User} 
+              title="Total Students" 
+              value={mockStudents.length} 
+              description="Active students in the system"
+            />
+            <StatsCard 
+              icon={AlertTriangle} 
+              title="At-Risk Students" 
+              value={atRiskCount} 
+              description={`${Math.round((atRiskCount / mockStudents.length) * 100)}% of total students`}
+            />
+            <StatsCard 
+              icon={Brain} 
+              title="Behavior Incidents" 
+              value={behaviorIncidentsCount} 
+              description="Total incidents reported"
+            />
+            <StatsCard 
+              icon={UserCheck} 
+              title="Average Attendance" 
+              value={`${avgAttendance}%`} 
+              description={avgAttendance >= 80 ? "Good overall attendance" : "Needs improvement"}
+            />
           </div>
-
-          <Tabs defaultValue="students" className="mb-6">
+          
+          <Tabs defaultValue="students">
             <TabsList className="mb-4">
               <TabsTrigger value="students">Students</TabsTrigger>
-              <TabsTrigger value="teachers">Teachers</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="teachers">Faculty</TabsTrigger>
               <TabsTrigger value="reports">Reports</TabsTrigger>
             </TabsList>
-
+            
+            {/* Students Tab */}
             <TabsContent value="students">
               <Card>
                 <CardHeader>
-                  <CardTitle>Student Management</CardTitle>
-                  <CardDescription>View and manage all students enrolled in ASBM University</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="selectAll" 
-                        checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
-                        onCheckedChange={handleSelectAll}
+                  <CardTitle>Student Directory</CardTitle>
+                  <CardDescription>View and manage all students</CardDescription>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or roll number..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
-                      <Label htmlFor="selectAll" className="text-sm font-medium">
-                        Select All
-                      </Label>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" disabled={selectedStudents.length === 0}>
+                    
+                    <div className="flex gap-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-[180px]">
+                            <Filter className="mr-2 h-4 w-4" />
+                            {courseFilter}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {courses.map((course) => (
+                            <DropdownMenuItem 
+                              key={course} 
+                              onClick={() => setCourseFilter(course)}
+                            >
+                              {course}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      
+                      <Button variant="outline">
+                        <Download className="mr-2 h-4 w-4" />
                         Export
-                      </Button>
-                      <Button variant="outline" size="sm" disabled={selectedStudents.length === 0}>
-                        Bulk Edit
                       </Button>
                     </div>
                   </div>
-                  
-                  <div className="border rounded-md">
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[50px]"></TableHead>
-                          <TableHead>Student</TableHead>
-                          <TableHead>Roll Number</TableHead>
-                          <TableHead>Course</TableHead>
-                          <TableHead>Semester</TableHead>
-                          <TableHead>Behavior Score</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead className="w-[300px]">
+                            <Button 
+                              variant="ghost" 
+                              className="flex items-center gap-1 p-0 font-semibold"
+                              onClick={() => handleSort('name')}
+                            >
+                              Student <SortIndicator field="name" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>
+                            <Button 
+                              variant="ghost" 
+                              className="flex items-center gap-1 p-0 font-semibold"
+                              onClick={() => handleSort('course')}
+                            >
+                              Course <SortIndicator field="course" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>
+                            <Button 
+                              variant="ghost" 
+                              className="flex items-center gap-1 p-0 font-semibold"
+                              onClick={() => handleSort('attendance')}
+                            >
+                              Attendance <SortIndicator field="attendance" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>
+                            <Button 
+                              variant="ghost" 
+                              className="flex items-center gap-1 p-0 font-semibold"
+                              onClick={() => handleSort('behaviorScore')}
+                            >
+                              Behavior <SortIndicator field="behaviorScore" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredStudents.slice(0, 10).map((student) => (
+                        {filteredStudents.map((student) => (
                           <TableRow key={student.id}>
                             <TableCell>
-                              <Checkbox 
-                                checked={selectedStudents.includes(student.id)}
-                                onCheckedChange={() => handleSelectStudent(student.id)}
-                              />
-                            </TableCell>
-                            <TableCell>
                               <div className="flex items-center gap-3">
-                                <Avatar>
+                                <Avatar className="h-8 w-8">
                                   <AvatarImage src={student.avatar} alt={student.name} />
-                                  <AvatarFallback>{student.name.substring(0, 2)}</AvatarFallback>
+                                  <AvatarFallback>{student.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p className="font-medium">{student.name}</p>
-                                  <p className="text-xs text-gray-500">{student.email}</p>
+                                  <div className="font-medium">{student.name}</div>
+                                  <div className="text-xs text-muted-foreground">{student.rollNumber}</div>
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell>{student.rollNumber}</TableCell>
-                            <TableCell>{student.course}</TableCell>
-                            <TableCell>{student.semester}</TableCell>
                             <TableCell>
-                              <Badge className={`
-                                ${student.behaviorScore >= 90 ? 'bg-green-100 text-green-800' : 
-                                  student.behaviorScore >= 75 ? 'bg-blue-100 text-blue-800' : 
-                                  student.behaviorScore >= 60 ? 'bg-yellow-100 text-yellow-800' : 
-                                  'bg-red-100 text-red-800'}
-                              `}>
-                                {student.behaviorScore}/100
-                              </Badge>
+                              <div className="flex flex-col">
+                                <span>{student.course}</span>
+                                <span className="text-xs text-muted-foreground">Semester {student.semester}</span>
+                              </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="ghost">View</Button>
-                                <Button size="sm" variant="ghost">Edit</Button>
+                              <div className="flex items-center">
+                                {student.attendance < 75 ? (
+                                  <AlertTriangle className="h-4 w-4 text-destructive mr-1" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                                )}
+                                {student.attendance}%
                               </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                {student.behaviorScore < 70 ? (
+                                  <AlertTriangle className="h-4 w-4 text-destructive mr-1" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                                )}
+                                {student.behaviorScore}/100
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {student.attendance < 75 || student.behaviorScore < 70 ? (
+                                <Badge variant="destructive">At Risk</Badge>
+                              ) : (
+                                <Badge variant="outline">Good Standing</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link to={`/admin/student/${student.id}`}>View</Link>
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
+
+                        {filteredStudents.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8">
+                              <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                <Search className="h-8 w-8 mb-4" />
+                                <p className="mb-2 font-medium">No students found</p>
+                                <p className="text-sm">Try adjusting your search or filters</p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
                       </TableBody>
                     </Table>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-
+            
+            {/* Teachers Tab */}
             <TabsContent value="teachers">
               <Card>
                 <CardHeader>
-                  <CardTitle>Faculty Management</CardTitle>
-                  <CardDescription>View and manage faculty members at ASBM University</CardDescription>
+                  <CardTitle>Faculty Directory</CardTitle>
+                  <CardDescription>View all faculty members</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border rounded-md">
+                  <div className="rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Teacher</TableHead>
+                          <TableHead className="w-[300px]">Teacher</TableHead>
                           <TableHead>Department</TableHead>
                           <TableHead>Subject</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredTeachers.slice(0, 10).map((teacher) => (
+                        {mockTeachers.slice(0, 8).map((teacher) => (
                           <TableRow key={teacher.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <Avatar>
+                                <Avatar className="h-8 w-8">
                                   <AvatarImage src={teacher.avatar} alt={teacher.name} />
-                                  <AvatarFallback>{teacher.name.substring(0, 2)}</AvatarFallback>
+                                  <AvatarFallback>{teacher.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                 </Avatar>
-                                <div>
-                                  <p className="font-medium">{teacher.name}</p>
-                                  <p className="text-xs text-gray-500">{teacher.email}</p>
-                                </div>
+                                <div className="font-medium">{teacher.name}</div>
                               </div>
                             </TableCell>
                             <TableCell>{teacher.department}</TableCell>
                             <TableCell>{teacher.subject}</TableCell>
                             <TableCell>
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="ghost">View</Button>
-                                <Button size="sm" variant="ghost">Edit</Button>
+                              <div className="flex items-center text-sm">
+                                <Mail className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                                {teacher.email}
                               </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm">View</Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -304,127 +382,114 @@ const AdminPanel: React.FC = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-
-            <TabsContent value="analytics">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Reports Tab */}
+            <TabsContent value="reports">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Departmental Distribution</CardTitle>
-                    <CardDescription>Student enrollment by department</CardDescription>
+                    <CardTitle>Available Reports</CardTitle>
+                    <CardDescription>Generate and download reports</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={departmentalDistribution}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={100}
-                            fill="#8884d8"
-                            paddingAngle={5}
-                            dataKey="value"
-                            label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {departmentalDistribution.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Student Behavior Report</h3>
+                          <p className="text-sm text-muted-foreground">Comprehensive behavior analysis</p>
+                        </div>
+                        <Button>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Generate
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Attendance Report</h3>
+                          <p className="text-sm text-muted-foreground">Student attendance trends</p>
+                        </div>
+                        <Button>
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Generate
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Course Performance</h3>
+                          <p className="text-sm text-muted-foreground">Academic performance by course</p>
+                        </div>
+                        <Button>
+                          <School className="mr-2 h-4 w-4" />
+                          Generate
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Behavioral Incident Log</h3>
+                          <p className="text-sm text-muted-foreground">Complete incident history</p>
+                        </div>
+                        <Button>
+                          <Brain className="mr-2 h-4 w-4" />
+                          Generate
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-
+                
                 <Card>
                   <CardHeader>
-                    <CardTitle>Behavioral Incident Trends</CardTitle>
-                    <CardDescription>Monthly reported incidents</CardDescription>
+                    <CardTitle>Recent Reports</CardTitle>
+                    <CardDescription>Previously generated reports</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={behavioralTrends}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="incidents" fill="#8884d8" />
-                        </BarChart>
-                      </ResponsiveContainer>
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Monthly Behavior Summary</h3>
+                          <p className="text-xs text-muted-foreground">Generated on 15 Oct 2023</p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Semester Attendance Report</h3>
+                          <p className="text-xs text-muted-foreground">Generated on 30 Sep 2023</p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">Academic Performance Trends</h3>
+                          <p className="text-xs text-muted-foreground">Generated on 15 Sep 2023</p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6">
+                      <Link to="/reports" className="text-primary text-sm hover:underline flex items-center justify-center">
+                        <BarChart className="h-4 w-4 mr-2" />
+                        View Analytics Dashboard
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-
-            <TabsContent value="reports">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Behavioral Reports</CardTitle>
-                  <CardDescription>Review and manage behavioral reports</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Student</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Reported By</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {mockStudents
-                          .filter(student => student.behavioralIncidents.length > 0)
-                          .flatMap(student => 
-                            student.behavioralIncidents.map(incident => ({
-                              ...incident,
-                              student
-                            }))
-                          )
-                          .slice(0, 10)
-                          .map((item, index) => (
-                            <TableRow key={index}>
-                              <TableCell>
-                                <div className="flex items-center gap-3">
-                                  <Avatar>
-                                    <AvatarImage src={item.student.avatar} alt={item.student.name} />
-                                    <AvatarFallback>{item.student.name.substring(0, 2)}</AvatarFallback>
-                                  </Avatar>
-                                  <p className="font-medium">{item.student.name}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
-                              <TableCell>
-                                <Badge className={item.type === 'Minor' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}>
-                                  {item.type}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>{item.description}</TableCell>
-                              <TableCell>{item.teacher}</TableCell>
-                              <TableCell>
-                                <Badge>
-                                  {Math.random() > 0.5 ? 'Resolved' : 'Pending'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Button size="sm" variant="ghost">Review</Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
           </Tabs>
         </div>

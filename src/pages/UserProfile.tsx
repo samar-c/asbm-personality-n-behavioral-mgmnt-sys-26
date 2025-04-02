@@ -3,332 +3,442 @@ import React, { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { ChartContainer } from '@/components/ui/chart';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
-import { useAuth } from '@/context/AuthContext';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { 
+  User, Mail, Phone, Lock, Bell, Eye, EyeOff, Edit2, 
+  MessageSquare, LogOut, ShieldCheck, Save
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { mockStudents } from '@/utils/mockData';
+import { toast } from '@/hooks/use-toast';
 
-// Get a mock student for the profile page
-const profileStudent = mockStudents[0];
-
-// Generate mock attendance data
-const attendanceData = [
-  { month: 'Aug', attendance: 88 },
-  { month: 'Sep', attendance: 92 },
-  { month: 'Oct', attendance: 95 },
-  { month: 'Nov', attendance: 90 },
-  { month: 'Dec', attendance: 87 },
-  { month: 'Jan', attendance: 93 },
-];
-
-// Generate personality data for radar chart
-const personalityData = [
-  { subject: 'Openness', A: profileStudent.personalityTraits.openness, fullMark: 100 },
-  { subject: 'Conscientiousness', A: profileStudent.personalityTraits.conscientiousness, fullMark: 100 },
-  { subject: 'Extraversion', A: profileStudent.personalityTraits.extraversion, fullMark: 100 },
-  { subject: 'Agreeableness', A: profileStudent.personalityTraits.agreeableness, fullMark: 100 },
-  { subject: 'Neuroticism', A: profileStudent.personalityTraits.neuroticism, fullMark: 100 },
-];
-
-// Generate academic progress data
-const academicProgressData = [
-  { semester: 'Sem 1', grade: 85 },
-  { semester: 'Sem 2', grade: 82 },
-  { semester: 'Sem 3', grade: 88 },
-  { semester: 'Sem 4', grade: 90 },
-  { semester: 'Sem 5', grade: 87 },
-  { semester: 'Current', grade: 92 },
-];
-
-const UserProfile: React.FC = () => {
-  const { userName, userAvatar, userRole } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
+const UserProfile = () => {
+  const { userRole, userName, userAvatar, logout } = useAuth();
   
+  // User form state
+  const [isEditing, setIsEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [userForm, setUserForm] = useState({
+    fullName: userName || 'Student Name',
+    email: `${userRole}@asbm.ac.in`,
+    phone: '+91 98765 43210',
+    address: 'Campus Residence, ASBM University, Bhubaneswar',
+    password: '••••••••',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  
+  // Notification settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    assignmentReminders: true,
+    behavioralUpdates: true,
+    attendanceAlerts: true,
+    newsAndAnnouncements: false,
+  });
+  
+  // Find student data (for student role)
+  const studentData = userRole === 'student' ? mockStudents[0] : null;
+  
+  const handleFormChange = (field, value) => {
+    setUserForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+  
+  const handleNotificationChange = (field, value) => {
+    setNotificationSettings((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+  
+  const handleSaveProfile = () => {
+    toast({
+      title: "Profile updated",
+      description: "Your profile information has been saved.",
+    });
+    setIsEditing(false);
+  };
+  
+  const handleSaveNotifications = () => {
+    toast({
+      title: "Notification preferences saved",
+      description: "Your notification settings have been updated.",
+    });
+  };
+  
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navigation userRole={userRole || 'student'} />
-      <main className="flex-1 p-6 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-8 flex flex-col md:flex-row gap-8 items-start">
-            <Card className="w-full md:w-1/3">
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center">
-                  <Avatar className="h-24 w-24 mb-4">
-                    <AvatarImage src={userAvatar || profileStudent.avatar} />
-                    <AvatarFallback>{userName?.substring(0, 2) || "ST"}</AvatarFallback>
-                  </Avatar>
-                  <h2 className="text-xl font-bold">{userName || profileStudent.name}</h2>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {userRole === 'admin' ? 'Administrator' : 
-                     userRole === 'teacher' ? 'Faculty Member' : 
-                     `Student • ${profileStudent.course}`}
-                  </p>
-                  
-                  {userRole === 'student' && (
-                    <div className="text-sm mb-4">
-                      <p>Roll Number: {profileStudent.rollNumber}</p>
-                      <p>Semester: {profileStudent.semester}</p>
+      <Navigation />
+      
+      <main className="flex-1 py-6 px-4 md:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold tracking-tight mb-6">User Profile</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card className="md:col-span-1">
+              <CardContent className="pt-6 flex flex-col items-center text-center">
+                <Avatar className="h-24 w-24 mb-4">
+                  <AvatarImage src={userAvatar} alt={userName} />
+                  <AvatarFallback>{userName ? userName.substring(0, 2).toUpperCase() : 'UN'}</AvatarFallback>
+                </Avatar>
+                <h2 className="text-xl font-bold">{userName || 'User'}</h2>
+                <p className="text-muted-foreground mb-4">{userRole}</p>
+                {studentData && (
+                  <div className="w-full">
+                    <div className="px-4 py-2 bg-muted rounded-md mb-2 text-sm">
+                      <span className="font-medium">Roll Number:</span> {studentData.rollNumber}
                     </div>
-                  )}
-                  
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                    {isEditing ? "Cancel Editing" : "Edit Profile"}
+                    <div className="px-4 py-2 bg-muted rounded-md mb-2 text-sm">
+                      <span className="font-medium">Course:</span> {studentData.course}
+                    </div>
+                    <div className="px-4 py-2 bg-muted rounded-md text-sm">
+                      <span className="font-medium">Semester:</span> {studentData.semester}
+                    </div>
+                  </div>
+                )}
+                <div className="flex mt-6 gap-2">
+                  <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
                   </Button>
                 </div>
-                
-                {isEditing && (
-                  <div className="mt-6 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input id="name" defaultValue={userName || profileStudent.name} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" defaultValue={profileStudent.email} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" defaultValue="+91 9876543210" />
-                    </div>
-                    <Button className="w-full">Save Changes</Button>
-                  </div>
-                )}
-                
-                {!isEditing && userRole === 'student' && (
-                  <div className="mt-6 space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-1">Overall Performance</p>
-                      <Progress value={profileStudent.academicScore} className="h-2" />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>Score: {profileStudent.academicScore}/100</span>
-                        <span>{profileStudent.academicScore >= 80 ? 'Excellent' : 
-                               profileStudent.academicScore >= 70 ? 'Good' : 
-                               profileStudent.academicScore >= 60 ? 'Average' : 'Needs Improvement'}</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium mb-1">Attendance</p>
-                      <Progress value={profileStudent.attendance} className="h-2" />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>{profileStudent.attendance}%</span>
-                        <span>{profileStudent.attendance >= 90 ? 'Excellent' : 
-                               profileStudent.attendance >= 80 ? 'Good' : 
-                               profileStudent.attendance >= 75 ? 'Average' : 'Poor'}</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium mb-1">Behavior Score</p>
-                      <Progress value={profileStudent.behaviorScore} className="h-2" />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>{profileStudent.behaviorScore}/100</span>
-                        <span>{profileStudent.behaviorScore >= 90 ? 'Excellent' : 
-                               profileStudent.behaviorScore >= 80 ? 'Good' : 
-                               profileStudent.behaviorScore >= 70 ? 'Average' : 'Needs Improvement'}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
             
-            {userRole === 'student' && (
-              <Card className="w-full md:w-2/3">
-                <CardHeader>
-                  <CardTitle>Personality Analysis</CardTitle>
-                  <CardDescription>Based on behavioral patterns and assessments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart outerRadius={90} width={730} height={250} data={personalityData}>
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="subject" />
-                        <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                        <Radar name="Personality Traits" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                        <Tooltip />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          
-          {userRole === 'student' && (
-            <Tabs defaultValue="overview" className="mb-6">
-              <TabsList className="mb-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                <TabsTrigger value="behavior">Behavior</TabsTrigger>
-                <TabsTrigger value="academic">Academic</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <Tabs defaultValue="profile">
+                <TabsList className="mb-4 w-full">
+                  <TabsTrigger value="profile" className="flex-1">
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </TabsTrigger>
+                  <TabsTrigger value="security" className="flex-1">
+                    <Lock className="h-4 w-4 mr-2" />
+                    Security
+                  </TabsTrigger>
+                  <TabsTrigger value="notifications" className="flex-1">
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* Profile Tab */}
+                <TabsContent value="profile">
                   <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Strengths</CardTitle>
+                    <CardHeader>
+                      <CardTitle>Personal Information</CardTitle>
+                      <CardDescription>Update your personal details</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {profileStudent.strengths.map((strength, index) => (
-                          <li key={index} className="text-sm">{strength}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Areas for Improvement</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {profileStudent.areasOfImprovement.map((area, index) => (
-                          <li key={index} className="text-sm">{area}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Counselor Notes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm">
-                        {profileStudent.counselorNotes || "No counselor notes available at this time."}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="attendance">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Attendance Trend</CardTitle>
-                    <CardDescription>Monthly attendance percentage</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80 w-full">
-                      <ChartContainer 
-                        config={{
-                          attendance: { color: "#4285F4" },
-                        }}
-                      >
-                        <LineChart data={attendanceData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis domain={[60, 100]} />
-                          <Tooltip />
-                          <Legend />
-                          <Line 
-                            type="monotone" 
-                            dataKey="attendance" 
-                            stroke="#4285F4" 
-                            strokeWidth={2} 
-                            name="Attendance %" 
-                            dot={{ r: 4 }}
-                            activeDot={{ r: 6 }}
-                          />
-                        </LineChart>
-                      </ChartContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="behavior">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Behavioral Incidents</CardTitle>
-                    <CardDescription>Record of behavioral incidents and actions taken</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {profileStudent.behavioralIncidents.length > 0 ? (
-                      <div className="space-y-4">
-                        {profileStudent.behavioralIncidents.map((incident, index) => (
-                          <div key={index} className="p-4 border rounded-lg">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                    incident.type === 'Minor' 
-                                      ? 'bg-yellow-100 text-yellow-800' 
-                                      : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    {incident.type}
-                                  </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {new Date(incident.date).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                <p className="font-medium">{incident.description}</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Action: {incident.action}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Reported by: {incident.teacher}
-                                </p>
-                              </div>
+                      <form className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="fullName">Full Name</Label>
+                            <div className="flex">
+                              <User className="h-4 w-4 text-muted-foreground absolute mt-3 ml-3" />
+                              <Input 
+                                id="fullName" 
+                                value={userForm.fullName}
+                                onChange={(e) => handleFormChange('fullName', e.target.value)}
+                                className="pl-10"
+                                disabled={!isEditing}
+                              />
                             </div>
                           </div>
-                        ))}
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="flex">
+                              <Mail className="h-4 w-4 text-muted-foreground absolute mt-3 ml-3" />
+                              <Input 
+                                id="email" 
+                                type="email"
+                                value={userForm.email}
+                                onChange={(e) => handleFormChange('email', e.target.value)}
+                                className="pl-10"
+                                disabled={!isEditing}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <div className="flex">
+                              <Phone className="h-4 w-4 text-muted-foreground absolute mt-3 ml-3" />
+                              <Input 
+                                id="phone" 
+                                value={userForm.phone}
+                                onChange={(e) => handleFormChange('phone', e.target.value)}
+                                className="pl-10"
+                                disabled={!isEditing}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="language">Preferred Language</Label>
+                            <Select defaultValue="english" disabled={!isEditing}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select language" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="english">English</SelectItem>
+                                <SelectItem value="hindi">Hindi</SelectItem>
+                                <SelectItem value="odia">Odia</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="address">Address</Label>
+                            <Input 
+                              id="address" 
+                              value={userForm.address}
+                              onChange={(e) => handleFormChange('address', e.target.value)}
+                              disabled={!isEditing}
+                            />
+                          </div>
+                        </div>
+                        
+                        {isEditing && (
+                          <div className="flex justify-end gap-2 pt-4">
+                            <Button variant="outline" onClick={() => setIsEditing(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={handleSaveProfile}>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </Button>
+                          </div>
+                        )}
+                      </form>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                {/* Security Tab */}
+                <TabsContent value="security">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Security Settings</CardTitle>
+                      <CardDescription>Manage your password and security preferences</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">Change Password</h3>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="currentPassword">Current Password</Label>
+                              <div className="flex relative">
+                                <Lock className="h-4 w-4 text-muted-foreground absolute mt-3 ml-3" />
+                                <Input 
+                                  id="currentPassword" 
+                                  type={showPassword ? "text" : "password"}
+                                  value={userForm.password}
+                                  onChange={(e) => handleFormChange('password', e.target.value)}
+                                  className="pl-10"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-0 top-0 h-10 w-10"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="newPassword">New Password</Label>
+                              <Input 
+                                id="newPassword" 
+                                type="password"
+                                value={userForm.newPassword}
+                                onChange={(e) => handleFormChange('newPassword', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                              <Input 
+                                id="confirmPassword" 
+                                type="password"
+                                value={userForm.confirmPassword}
+                                onChange={(e) => handleFormChange('confirmPassword', e.target.value)}
+                              />
+                            </div>
+                            <Button className="mt-2">Update Password</Button>
+                          </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">Two-Factor Authentication</h3>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">Enable Two-Factor Authentication</p>
+                              <p className="text-sm text-muted-foreground">
+                                Add an extra layer of security to your account
+                              </p>
+                            </div>
+                            <Switch id="2fa" />
+                          </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">Login Sessions</h3>
+                          <div className="rounded-md border p-4 mb-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="font-medium">Current Session</p>
+                              <Badge variant="secondary">Active</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Chrome Browser on Windows • IP: 192.168.1.1
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Last active: Just now
+                            </p>
+                          </div>
+                          <Button variant="outline" className="w-full justify-center">
+                            Sign Out of All Devices
+                          </Button>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground">No behavioral incidents reported</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                {/* Notifications Tab */}
+                <TabsContent value="notifications">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Notification Preferences</CardTitle>
+                      <CardDescription>Manage how you receive notifications and alerts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium">Notification Channels</h3>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">Email Notifications</p>
+                              <p className="text-sm text-muted-foreground">
+                                Receive updates via email
+                              </p>
+                            </div>
+                            <Switch 
+                              id="emailNotifications" 
+                              checked={notificationSettings.emailNotifications}
+                              onCheckedChange={(checked) => handleNotificationChange('emailNotifications', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">SMS Notifications</p>
+                              <p className="text-sm text-muted-foreground">
+                                Receive important alerts via SMS
+                              </p>
+                            </div>
+                            <Switch 
+                              id="smsNotifications" 
+                              checked={notificationSettings.smsNotifications}
+                              onCheckedChange={(checked) => handleNotificationChange('smsNotifications', checked)}
+                            />
+                          </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium">Notification Types</h3>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">Assignment Reminders</p>
+                              <p className="text-sm text-muted-foreground">
+                                Get reminders for upcoming assignments
+                              </p>
+                            </div>
+                            <Switch 
+                              id="assignmentReminders" 
+                              checked={notificationSettings.assignmentReminders}
+                              onCheckedChange={(checked) => handleNotificationChange('assignmentReminders', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">Behavioral Updates</p>
+                              <p className="text-sm text-muted-foreground">
+                                Notifications about behavioral assessments
+                              </p>
+                            </div>
+                            <Switch 
+                              id="behavioralUpdates" 
+                              checked={notificationSettings.behavioralUpdates}
+                              onCheckedChange={(checked) => handleNotificationChange('behavioralUpdates', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">Attendance Alerts</p>
+                              <p className="text-sm text-muted-foreground">
+                                Get notified about attendance issues
+                              </p>
+                            </div>
+                            <Switch 
+                              id="attendanceAlerts" 
+                              checked={notificationSettings.attendanceAlerts}
+                              onCheckedChange={(checked) => handleNotificationChange('attendanceAlerts', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">News & Announcements</p>
+                              <p className="text-sm text-muted-foreground">
+                                University news and announcements
+                              </p>
+                            </div>
+                            <Switch 
+                              id="newsAndAnnouncements" 
+                              checked={notificationSettings.newsAndAnnouncements}
+                              onCheckedChange={(checked) => handleNotificationChange('newsAndAnnouncements', checked)}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-end pt-4">
+                          <Button onClick={handleSaveNotifications}>
+                            Save Preferences
+                          </Button>
+                        </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="academic">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Academic Progress</CardTitle>
-                    <CardDescription>Semester-wise academic performance</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80 w-full">
-                      <ChartContainer 
-                        config={{
-                          grade: { color: "#0F9D58" },
-                        }}
-                      >
-                        <LineChart data={academicProgressData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="semester" />
-                          <YAxis domain={[50, 100]} />
-                          <Tooltip />
-                          <Legend />
-                          <Line 
-                            type="monotone" 
-                            dataKey="grade" 
-                            stroke="#0F9D58" 
-                            strokeWidth={2} 
-                            name="Grade" 
-                            dot={{ r: 4 }}
-                            activeDot={{ r: 6 }}
-                          />
-                        </LineChart>
-                      </ChartContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
         </div>
       </main>
     </div>
