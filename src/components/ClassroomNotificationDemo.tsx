@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNotifications } from '@/context/NotificationContext';
 import { toast } from '@/hooks/use-toast';
-import { BellRing, BookOpen, Calendar, CheckCircle, Clock, NotificationIcon } from 'lucide-react';
+import { BellRing, BookOpen, Calendar, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { universityInfo } from '@/utils/mockData';
 

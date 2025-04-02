@@ -16,6 +16,36 @@ import { useAuth } from '@/context/AuthContext';
 import { Radar } from 'recharts';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
+// Extending the mock student type with additional properties needed
+// This ensures TypeScript doesn't complain about missing properties
+const extendedMockStudents = mockStudents.map(student => ({
+  ...student,
+  email: `${student.name.toLowerCase().replace(' ', '.')}@asbm.ac.in`,
+  participationScore: Math.floor(Math.random() * 30) + 70,
+  personalityTraits: {
+    openness: Math.floor(Math.random() * 30) + 70,
+    conscientiousness: Math.floor(Math.random() * 30) + 70,
+    extraversion: Math.floor(Math.random() * 30) + 70,
+    agreeableness: Math.floor(Math.random() * 30) + 70,
+    neuroticism: Math.floor(Math.random() * 30) + 70,
+  },
+  counselorNotes: "Student shows good progress in academics but needs to improve participation.",
+  strengths: ["Critical thinking", "Time management", "Research skills"],
+  areasOfImprovement: ["Public speaking", "Group collaboration", "Practical application"],
+}));
+
+// Update the behavioral incidents to include teacher and action
+extendedMockStudents.forEach(student => {
+  if (student.behavioralIncidents) {
+    student.behavioralIncidents = student.behavioralIncidents.map((incident, i) => ({
+      ...incident,
+      id: `incident-${i}`,
+      teacher: "Prof. Sharma",
+      action: "Verbal warning and counseling session"
+    }));
+  }
+});
+
 // Component for rendering a metric with icon and value
 const MetricCard = ({ icon: Icon, label, value, colorClass = "text-primary" }) => (
   <div className="flex items-center gap-3 p-4 bg-background rounded-md border">
@@ -35,8 +65,8 @@ const StudentDetail = () => {
   const [notes, setNotes] = React.useState("");
   const [notifyParents, setNotifyParents] = React.useState(false);
   
-  // Find the student by ID
-  const student = mockStudents.find(s => s.id === studentId) || mockStudents[0];
+  // Find the student by ID from our extended mock data
+  const student = extendedMockStudents.find(s => s.id === studentId) || extendedMockStudents[0];
   
   // Format data for radar chart
   const personalityChartData = [

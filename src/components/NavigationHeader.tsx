@@ -16,15 +16,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface NavigationHeaderProps {
-  toggleSidebar: () => void;
+  onMenuToggle: () => void;
 }
 
-const NavigationHeader: React.FC<NavigationHeaderProps> = ({ toggleSidebar }) => {
+const NavigationHeader: React.FC<NavigationHeaderProps> = ({ onMenuToggle }) => {
   const { userName, userRole, userAvatar, logout } = useAuth();
 
   return (
     <header className="h-16 border-b flex items-center px-4 md:px-6">
-      <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2 md:hidden">
+      <Button variant="ghost" size="icon" onClick={onMenuToggle} className="mr-2 md:hidden">
         <MenuIcon className="h-5 w-5" />
       </Button>
       

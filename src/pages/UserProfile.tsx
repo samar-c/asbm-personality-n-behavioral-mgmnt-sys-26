@@ -1,27 +1,21 @@
-
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { 
-  User, Mail, Phone, Lock, Bell, Eye, EyeOff, Edit2, 
-  MessageSquare, LogOut, ShieldCheck, Save
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
-import { mockStudents } from '@/utils/mockData';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Calendar, Settings, Lock, FileText, Bell, Mail, Smartphone, User, Shield, Building } from 'lucide-react';
 
 const UserProfile = () => {
   const { userRole, userName, userAvatar, logout } = useAuth();
   
-  // User form state
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [userForm, setUserForm] = useState({
@@ -34,7 +28,6 @@ const UserProfile = () => {
     confirmPassword: '',
   });
   
-  // Notification settings
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     smsNotifications: false,
@@ -44,7 +37,6 @@ const UserProfile = () => {
     newsAndAnnouncements: false,
   });
   
-  // Find student data (for student role)
   const studentData = userRole === 'student' ? mockStudents[0] : null;
   
   const handleFormChange = (field, value) => {
@@ -140,7 +132,6 @@ const UserProfile = () => {
                   </TabsTrigger>
                 </TabsList>
                 
-                {/* Profile Tab */}
                 <TabsContent value="profile">
                   <Card>
                     <CardHeader>
@@ -230,7 +221,6 @@ const UserProfile = () => {
                   </Card>
                 </TabsContent>
                 
-                {/* Security Tab */}
                 <TabsContent value="security">
                   <Card>
                     <CardHeader>
@@ -330,7 +320,6 @@ const UserProfile = () => {
                   </Card>
                 </TabsContent>
                 
-                {/* Notifications Tab */}
                 <TabsContent value="notifications">
                   <Card>
                     <CardHeader>
