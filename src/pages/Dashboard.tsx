@@ -6,6 +6,7 @@ import CourseCard from '@/components/CourseCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Calendar, CheckCircle2, AlertTriangle, TrendingUp, Users, FilePieChart } from 'lucide-react';
 import { mockCourses, mockStudents } from '@/utils/mockData';
 import { useAuth } from '@/context/AuthContext';
@@ -104,22 +105,22 @@ const Dashboard = () => {
                     <CardTitle className="text-sm font-medium">Behavior Score</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{mockStudents[0].behaviorScore}/100</div>
+                    <div className="text-2xl font-bold">{mockStudents[0].behaviorScore}</div>
                     <Progress value={mockStudents[0].behaviorScore} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
-                      {mockStudents[0].behaviorScore >= 80 ? "Excellent behavior" : "Room for improvement"}
+                      {mockStudents[0].behaviorScore >= 90 ? "Outstanding" : mockStudents[0].behaviorScore >= 70 ? "Good" : "Needs improvement"}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Academic Score</CardTitle>
+                    <CardTitle className="text-sm font-medium">Academic Progress</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{mockStudents[0].academicScore}/100</div>
+                    <div className="text-2xl font-bold">{mockStudents[0].academicScore}%</div>
                     <Progress value={mockStudents[0].academicScore} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
-                      {mockStudents[0].academicScore >= 80 ? "Excellent academic performance" : "Room for improvement"}
+                      {mockStudents[0].academicScore >= 85 ? "Excellent" : mockStudents[0].academicScore >= 70 ? "Good" : "Needs improvement"}
                     </p>
                   </CardContent>
                 </Card>
@@ -135,10 +136,7 @@ const Dashboard = () => {
                   <CardContent>
                     <div className="text-2xl font-bold">{mockStudents.length}</div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      <Link to="/admin" className="flex items-center text-primary hover:underline">
-                        <Users className="h-3 w-3 mr-1" /> 
-                        View all students
-                      </Link>
+                      Across all courses
                     </p>
                   </CardContent>
                 </Card>
@@ -147,209 +145,226 @@ const Dashboard = () => {
                     <CardTitle className="text-sm font-medium">Average Attendance</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{avgAttendance.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold">{Math.round(avgAttendance)}%</div>
                     <Progress value={avgAttendance} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
-                      {avgAttendance >= 80 ? "Good class attendance" : "Needs improvement"}
+                      {avgAttendance >= 80 ? "Good overall attendance" : "Below target"}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Behavior Incidents</CardTitle>
+                    <CardTitle className="text-sm font-medium">Behavior Score</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      {(incidentsByType['Minor'] || 0) + (incidentsByType['Major'] || 0)}
-                    </div>
-                    <div className="flex items-center justify-between text-xs mt-1">
-                      <span className="text-muted-foreground">Minor: {incidentsByType['Minor'] || 0}</span>
-                      <span className="text-destructive">Major: {incidentsByType['Major'] || 0}</span>
-                    </div>
+                    <div className="text-2xl font-bold">{Math.round(avgBehaviorScore)}</div>
+                    <Progress value={avgBehaviorScore} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
-                      <Link to="/reports" className="flex items-center text-primary hover:underline">
-                        <FilePieChart className="h-3 w-3 mr-1" />
-                        View detailed report
-                      </Link>
+                      {avgBehaviorScore >= 85 ? "Excellent" : avgBehaviorScore >= 70 ? "Good" : "Concerning"}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Academic Performance</CardTitle>
+                    <CardTitle className="text-sm font-medium">Academic Progress</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{avgAcademicScore.toFixed(1)}/100</div>
+                    <div className="text-2xl font-bold">{Math.round(avgAcademicScore)}%</div>
                     <Progress value={avgAcademicScore} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
-                      {avgAcademicScore >= 80 ? "Good overall performance" : "Needs improvement"}
+                      {avgAcademicScore >= 85 ? "High performance" : avgAcademicScore >= 70 ? "Average" : "Below average"}
                     </p>
                   </CardContent>
                 </Card>
               </>
             )}
           </div>
-
-          {/* Conditional content based on user role */}
-          {userRole === 'student' && (
-            <Tabs defaultValue="enrolled" className="mb-8">
-              <TabsList>
-                <TabsTrigger value="enrolled">Enrolled Courses</TabsTrigger>
-                <TabsTrigger value="todo">To Do</TabsTrigger>
-              </TabsList>
-              <TabsContent value="enrolled">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {courses.map((course) => (
-                    <CourseCard key={course.id} {...course} />
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value="todo">
-                <div className="bg-white rounded-lg shadow">
-                  <div className="p-4 border-b">
-                    <h3 className="font-semibold">Upcoming Assignments</h3>
-                  </div>
-                  <div className="divide-y">
-                    {courses
-                      .filter((course) => course.pendingAssignments > 0)
-                      .map((course) => (
-                        <div key={course.id} className="p-4 hover:bg-gray-50 assignment-item">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium">{course.title}</h4>
-                              <p className="text-sm text-muted-foreground">Assignment due tomorrow</p>
+          
+          {/* Main Content Tabs */}
+          <Tabs defaultValue="courses" className="space-y-4">
+            <TabsList className="mb-4">
+              <TabsTrigger value="courses">My Courses</TabsTrigger>
+              {userRole === 'student' && <TabsTrigger value="assignments">Assignments</TabsTrigger>}
+              {(userRole === 'teacher' || userRole === 'admin') && <TabsTrigger value="at-risk">At-Risk Students</TabsTrigger>}
+              {userRole === 'admin' && <TabsTrigger value="incidents">Recent Incidents</TabsTrigger>}
+            </TabsList>
+            
+            {/* Courses Tab */}
+            <TabsContent value="courses" className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {courses.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    id={course.id}
+                    title={course.title}
+                    instructor={course.instructor}
+                    subject={course.subject}
+                    color={course.color}
+                    pendingAssignments={course.pendingAssignments}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+            
+            {/* Assignments Tab (Student only) */}
+            {userRole === 'student' && (
+              <TabsContent value="assignments" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upcoming Assignments</CardTitle>
+                    <CardDescription>Tasks that need your attention</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {getPendingAssignmentsCount() > 0 ? (
+                        courses.flatMap((course) => 
+                          Array(course.pendingAssignments).fill(0).map((_, idx) => (
+                            <div key={`${course.id}-${idx}`} className="flex items-start space-x-4 p-2 rounded hover:bg-muted">
+                              <div 
+                                className="w-1 self-stretch rounded-full" 
+                                style={{ backgroundColor: course.color }} 
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h4 className="font-medium">Assignment {idx + 1}</h4>
+                                    <p className="text-sm text-muted-foreground">{course.title}</p>
+                                  </div>
+                                  <Button size="sm" variant="outline">View</Button>
+                                </div>
+                                <div className="flex items-center mt-2 text-sm">
+                                  <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                                  <span>Due in {Math.floor(Math.random() * 7) + 1} days</span>
+                                </div>
+                              </div>
                             </div>
-                            <Button size="sm" variant="outline">
-                              <CheckCircle2 className="mr-2 h-4 w-4" />
-                              Mark Done
-                            </Button>
+                          ))
+                        )
+                      ) : (
+                        <div className="p-4 text-center">
+                          <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                          <h3 className="font-medium mb-1">All caught up!</h3>
+                          <p className="text-sm text-muted-foreground">
+                            No pending assignments at the moment.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+            
+            {/* At-Risk Students Tab (Teacher/Admin only) */}
+            {(userRole === 'teacher' || userRole === 'admin') && (
+              <TabsContent value="at-risk" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Students Requiring Attention</CardTitle>
+                    <CardDescription>Students with attendance or behavior issues</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {atRiskStudents.map((student) => (
+                        <div key={student.id} className="flex items-start space-x-4 p-3 rounded hover:bg-muted">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={student.avatar} alt={student.name} />
+                            <AvatarFallback>{student.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium">{student.name}</h4>
+                                <p className="text-sm text-muted-foreground">{student.course}, Semester {student.semester}</p>
+                              </div>
+                              <Button size="sm" variant="outline">View Profile</Button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              <div className="flex items-center text-sm">
+                                {student.attendance < 75 ? (
+                                  <AlertTriangle className="mr-2 h-4 w-4 text-destructive" />
+                                ) : (
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-muted-foreground" />
+                                )}
+                                <span>Attendance: {student.attendance}%</span>
+                              </div>
+                              <div className="flex items-center text-sm">
+                                {student.behaviorScore < 70 ? (
+                                  <AlertTriangle className="mr-2 h-4 w-4 text-destructive" />
+                                ) : (
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-muted-foreground" />
+                                )}
+                                <span>Behavior: {student.behaviorScore}/100</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
-                    {courses.filter((course) => course.pendingAssignments > 0).length === 0 && (
-                      <div className="p-8 text-center">
-                        <p className="text-muted-foreground">No pending assignments</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                      
+                      {atRiskStudents.length === 0 && (
+                        <div className="p-4 text-center">
+                          <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                          <h3 className="font-medium mb-1">All students on track</h3>
+                          <p className="text-sm text-muted-foreground">
+                            No students requiring special attention at the moment.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
-            </Tabs>
-          )}
-
-          {/* For teachers and admin - show at-risk students */}
-          {(userRole === 'teacher' || userRole === 'admin') && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>At-Risk Students</CardTitle>
-                  <CardDescription>Students with low attendance or behavior scores</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {atRiskStudents.length > 0 ? (
-                    <div className="divide-y">
-                      {atRiskStudents.map(student => (
-                        <div key={student.id} className="py-3 flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Avatar className="h-9 w-9 mr-3">
+            )}
+            
+            {/* Incidents Tab (Admin only) */}
+            {userRole === 'admin' && (
+              <TabsContent value="incidents" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Behavioral Incidents</CardTitle>
+                    <CardDescription>Reported incidents in the last 30 days</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {mockStudents.flatMap(student => 
+                        student.behavioralIncidents.map((incident, idx) => (
+                          <div key={`${student.id}-${idx}`} className="flex items-start space-x-4 p-3 rounded hover:bg-muted">
+                            <Avatar className="h-10 w-10">
                               <AvatarImage src={student.avatar} alt={student.name} />
                               <AvatarFallback>{student.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <div>
-                              <h4 className="font-medium text-sm">{student.name}</h4>
-                              <p className="text-xs text-muted-foreground">{student.course}, Sem {student.semester}</p>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-medium">{student.name}</h4>
+                                  <p className="text-sm text-muted-foreground">{student.course}, Semester {student.semester}</p>
+                                </div>
+                                <Button size="sm" variant="outline">View Details</Button>
+                              </div>
+                              <div className="mt-2">
+                                <p className="text-sm font-medium">Incident: {incident.type}</p>
+                                <p className="text-sm text-muted-foreground">{incident.description}</p>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                            {student.attendance < 75 && (
-                              <div className="flex items-center text-amber-500">
-                                <AlertTriangle className="h-4 w-4 mr-1" />
-                                <span className="text-xs font-medium">{student.attendance}% Attendance</span>
-                              </div>
-                            )}
-                            {student.behaviorScore < 70 && (
-                              <div className="flex items-center text-destructive">
-                                <AlertTriangle className="h-4 w-4 mr-1" />
-                                <span className="text-xs font-medium">{student.behaviorScore} Behavior</span>
-                              </div>
-                            )}
-                            <Button size="sm" variant="outline" asChild>
-                              <Link to={`/admin/student/${student.id}`}>View</Link>
-                            </Button>
-                          </div>
+                        ))
+                      ).slice(0, 5)}
+                      
+                      {mockStudents.flatMap(s => s.behavioralIncidents).length === 0 && (
+                        <div className="p-4 text-center">
+                          <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                          <h3 className="font-medium mb-1">No recent incidents</h3>
+                          <p className="text-sm text-muted-foreground">
+                            No behavioral incidents have been reported recently.
+                          </p>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-4">No at-risk students currently</p>
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>Frequent tasks and reports</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                  <Button className="justify-start">
-                    <FilePieChart className="mr-2 h-4 w-4" />
-                    Generate Behavior Report
-                  </Button>
-                  <Button className="justify-start" variant="outline">
-                    <Users className="mr-2 h-4 w-4" />
-                    Student Directory
-                  </Button>
-                  <Button className="justify-start" variant="outline">
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    Analytics Dashboard
-                  </Button>
-                  <Link to="/reports" className="text-primary text-sm hover:underline mt-2">
-                    View all reports →
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Recent activity for all users */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest updates in your account</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex gap-4 items-start">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Bell className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">New announcement in Business Administration</p>
-                    <p className="text-xs text-muted-foreground">2 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex gap-4 items-start">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Assignment submitted: Data Structures</p>
-                    <p className="text-xs text-muted-foreground">Yesterday</p>
-                  </div>
-                </div>
-                <div className="flex gap-4 items-start">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Calendar className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Upcoming exam: Financial Accounting</p>
-                    <p className="text-xs text-muted-foreground">In 5 days</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </main>
     </div>

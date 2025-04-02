@@ -1,273 +1,239 @@
-import { faker } from '@faker-js/faker';
 
-export interface Student {
-  id: string;
-  name: string;
-  rollNumber: string;
-  avatar: string;
-  email: string;
-  course: string;
-  semester: number;
-  attendance: number;
-  behaviorScore: number;
-  personalityTraits: {
-    openness: number;
-    conscientiousness: number;
-    extraversion: number;
-    agreeableness: number;
-    neuroticism: number;
-  };
-  academicScore: number;
-  participationScore: number;
-  behavioralIncidents: Array<{
-    id: string;
-    date: string;
-    type: 'Minor' | 'Major';
-    description: string;
-    action: string;
-    teacher: string;
-  }>;
-  strengths: string[];
-  areasOfImprovement: string[];
-  counselorNotes: string;
-}
+// Mock data for the application
 
-export interface Teacher {
-  id: string;
-  name: string;
-  avatar: string;
-  email: string;
-  department: string;
-  subject: string;
-}
+// Courses
+export const mockCourses = [
+  {
+    id: '1',
+    title: 'Introduction to Computer Science',
+    instructor: 'Dr. Ramesh Kumar',
+    subject: 'Computer Science',
+    color: '#4285F4',
+    pendingAssignments: 2,
+  },
+  {
+    id: '2',
+    title: 'Business Administration',
+    instructor: 'Prof. Sanjay Patel',
+    subject: 'Management',
+    color: '#0F9D58',
+    pendingAssignments: 0,
+  },
+  {
+    id: '3',
+    title: 'Financial Accounting',
+    instructor: 'Dr. Priya Sharma',
+    subject: 'Accounting',
+    color: '#DB4437',
+    pendingAssignments: 1,
+  },
+  {
+    id: '4',
+    title: 'Marketing Management',
+    instructor: 'Prof. Anjali Gupta',
+    subject: 'Marketing',
+    color: '#F4B400',
+    pendingAssignments: 1,
+  },
+  {
+    id: '5',
+    title: 'Business Law',
+    instructor: 'Dr. Arjun Reddy',
+    subject: 'Law',
+    color: '#673AB7',
+    pendingAssignments: 0,
+  },
+  {
+    id: '6',
+    title: 'Business Ethics',
+    instructor: 'Prof. Meera Desai',
+    subject: 'Ethics',
+    color: '#FF6D00',
+    pendingAssignments: 1,
+  },
+];
 
-export interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  subject: string;
-  color: string;
-  pendingAssignments: number;
-}
-
-// Generate random behavioral incidents
-const generateIncidents = (count: number) => {
-  const incidents = [];
-  const incidentTypes = [
-    'Late to class',
-    'Missing homework',
-    'Disruptive behavior',
-    'Using phone during class',
-    'Unexcused absence',
-    'Cheating attempt',
-    'Disrespectful to peers',
-    'Disrespectful to teacher',
-    'Dress code violation',
-    'Sleeping in class'
-  ];
-  
-  const actions = [
-    'Verbal warning',
-    'Written warning',
-    'Parent notification',
-    'Counselor referral',
-    'Detention',
-    'Suspension',
-    'Meeting with dean'
-  ];
-  
-  const teachers = [
-    'Dr. Ramesh Kumar',
-    'Prof. Sanjay Patel',
-    'Dr. Priya Sharma',
-    'Prof. Ajay Singh',
-    'Dr. Neha Gupta',
-    'Prof. Anita Desai'
-  ];
-  
-  for (let i = 0; i < count; i++) {
-    const isMinor = Math.random() > 0.3;
-    incidents.push({
-      id: faker.string.uuid(),
-      date: faker.date.recent({ days: 90 }).toISOString().split('T')[0],
-      type: isMinor ? 'Minor' : 'Major',
-      description: faker.helpers.arrayElement(incidentTypes),
-      action: faker.helpers.arrayElement(actions),
-      teacher: faker.helpers.arrayElement(teachers)
-    });
-  }
-  
-  return incidents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-};
-
-// Generate random strengths
-const generateStrengths = () => {
-  const strengths = [
-    'Critical thinking',
-    'Problem-solving',
-    'Teamwork',
-    'Leadership',
-    'Communication',
-    'Creativity',
-    'Attention to detail',
-    'Time management',
-    'Adaptability',
-    'Analytical thinking',
-    'Enthusiasm',
-    'Persistence'
-  ];
-  
-  const count = faker.number.int({ min: 2, max: 5 });
-  return faker.helpers.arrayElements(strengths, count);
-};
-
-// Generate random areas of improvement
-const generateAreasOfImprovement = () => {
-  const areas = [
-    'Time management',
-    'Note-taking skills',
-    'Participation in class',
-    'Homework completion',
-    'Test preparation',
-    'Group work',
-    'Written communication',
-    'Oral presentation',
-    'Focus and attention',
-    'Organization',
-    'Self-motivation',
-    'Stress management'
-  ];
-  
-  const count = faker.number.int({ min: 2, max: 4 });
-  return faker.helpers.arrayElements(areas, count);
-};
-
-// Generate random student data
-export const generateStudents = (count: number): Student[] => {
-  const students = [];
-  
-  for (let i = 0; i < count; i++) {
-    const firstName = faker.person.firstName();
-    const lastName = faker.person.lastName();
-    
-    students.push({
-      id: faker.string.uuid(),
-      name: `${firstName} ${lastName}`,
-      rollNumber: `R${faker.number.int({ min: 1000, max: 9999 })}`,
-      avatar: faker.image.avatar(),
-      email: faker.internet.email({ firstName, lastName, provider: 'asbm.ac.in' }),
-      course: faker.helpers.arrayElement([
-        'Computer Science',
-        'Business Administration',
-        'Financial Accounting',
-        'Marketing',
-        'Human Resources',
-        'Data Science'
-      ]),
-      semester: faker.number.int({ min: 1, max: 8 }),
-      attendance: faker.number.int({ min: 60, max: 100 }),
-      behaviorScore: faker.number.int({ min: 60, max: 100 }),
-      personalityTraits: {
-        openness: faker.number.int({ min: 1, max: 100 }),
-        conscientiousness: faker.number.int({ min: 1, max: 100 }),
-        extraversion: faker.number.int({ min: 1, max: 100 }),
-        agreeableness: faker.number.int({ min: 1, max: 100 }),
-        neuroticism: faker.number.int({ min: 1, max: 100 })
+// Students
+export const mockStudents = [
+  {
+    id: '1',
+    name: 'Rahul Sharma',
+    rollNumber: 'BBA2021001',
+    course: 'Business Administration',
+    semester: 3,
+    attendance: 92,
+    behaviorScore: 90,
+    academicScore: 88,
+    avatar: 'https://i.pravatar.cc/150?u=1',
+    behavioralIncidents: [],
+  },
+  {
+    id: '2',
+    name: 'Priya Patel',
+    rollNumber: 'BBA2021002',
+    course: 'Business Administration',
+    semester: 3,
+    attendance: 65,
+    behaviorScore: 75,
+    academicScore: 82,
+    avatar: 'https://i.pravatar.cc/150?u=2',
+    behavioralIncidents: [
+      {
+        type: 'Disruptive Behavior',
+        description: 'Talking excessively during lecture despite warnings.',
+        date: '2023-09-05',
       },
-      academicScore: faker.number.int({ min: 50, max: 100 }),
-      participationScore: faker.number.int({ min: 50, max: 100 }),
-      behavioralIncidents: generateIncidents(faker.number.int({ min: 0, max: 6 })),
-      strengths: generateStrengths(),
-      areasOfImprovement: generateAreasOfImprovement(),
-      counselorNotes: faker.helpers.maybe(() => faker.lorem.paragraph(), { probability: 0.7 }) || ''
-    });
-  }
-  
-  return students;
-};
+    ],
+  },
+  {
+    id: '3',
+    name: 'Amit Kumar',
+    rollNumber: 'BCA2021001',
+    course: 'Computer Applications',
+    semester: 3,
+    attendance: 85,
+    behaviorScore: 95,
+    academicScore: 92,
+    avatar: 'https://i.pravatar.cc/150?u=3',
+    behavioralIncidents: [],
+  },
+  {
+    id: '4',
+    name: 'Neha Gupta',
+    rollNumber: 'BCA2021002',
+    course: 'Computer Applications',
+    semester: 3,
+    attendance: 78,
+    behaviorScore: 88,
+    academicScore: 86,
+    avatar: 'https://i.pravatar.cc/150?u=4',
+    behavioralIncidents: [],
+  },
+  {
+    id: '5',
+    name: 'Rajesh Singh',
+    rollNumber: 'BCom2021001',
+    course: 'Commerce',
+    semester: 3,
+    attendance: 60,
+    behaviorScore: 65,
+    academicScore: 72,
+    avatar: 'https://i.pravatar.cc/150?u=5',
+    behavioralIncidents: [
+      {
+        type: 'Academic Dishonesty',
+        description: 'Suspected of cheating during mid-term exam.',
+        date: '2023-08-17',
+      },
+      {
+        type: 'Attendance Issue',
+        description: 'Consistently arriving late to morning classes.',
+        date: '2023-09-10',
+      },
+    ],
+  },
+  {
+    id: '6',
+    name: 'Anjali Desai',
+    rollNumber: 'BCom2021002',
+    course: 'Commerce',
+    semester: 3,
+    attendance: 90,
+    behaviorScore: 92,
+    academicScore: 90,
+    avatar: 'https://i.pravatar.cc/150?u=6',
+    behavioralIncidents: [],
+  },
+  {
+    id: '7',
+    name: 'Vikram Mehta',
+    rollNumber: 'BHM2021001',
+    course: 'Hotel Management',
+    semester: 3,
+    attendance: 72,
+    behaviorScore: 85,
+    academicScore: 78,
+    avatar: 'https://i.pravatar.cc/150?u=7',
+    behavioralIncidents: [],
+  },
+  {
+    id: '8',
+    name: 'Pooja Verma',
+    rollNumber: 'BHM2021002',
+    course: 'Hotel Management',
+    semester: 3,
+    attendance: 95,
+    behaviorScore: 90,
+    academicScore: 91,
+    avatar: 'https://i.pravatar.cc/150?u=8',
+    behavioralIncidents: [],
+  },
+];
 
-// Generate random teacher data
-export const generateTeachers = (count: number): Teacher[] => {
-  const teachers = [];
-  
-  for (let i = 0; i < count; i++) {
-    const firstName = faker.person.firstName();
-    const lastName = faker.person.lastName();
-    
-    teachers.push({
-      id: faker.string.uuid(),
-      name: `Dr. ${firstName} ${lastName}`,
-      avatar: faker.image.avatar(),
-      email: faker.internet.email({ firstName, lastName, provider: 'asbm.ac.in' }),
-      department: faker.helpers.arrayElement([
-        'Computer Science',
-        'Business Administration',
-        'Finance',
-        'Marketing',
-        'Human Resources',
-        'Data Science'
-      ]),
-      subject: faker.helpers.arrayElement([
-        'Programming Fundamentals',
-        'Database Systems',
-        'Marketing Management',
-        'Financial Accounting',
-        'Human Resource Management',
-        'Business Statistics',
-        'Organizational Behavior'
-      ])
-    });
-  }
-  
-  return teachers;
-};
-
-// Generate courses
-export const generateCourses = (count: number): Course[] => {
-  const courses = [];
-  const colors = ['#4285F4', '#0F9D58', '#DB4437', '#F4B400'];
-  
-  for (let i = 0; i < count; i++) {
-    courses.push({
-      id: faker.string.uuid(),
-      title: faker.helpers.arrayElement([
-        'Introduction to Computer Science',
-        'Business Administration',
-        'Financial Accounting',
-        'Marketing Fundamentals',
-        'Data Structures & Algorithms',
-        'Human Resource Management',
-        'Operating Systems',
-        'Database Management',
-        'Digital Marketing',
-        'Corporate Finance'
-      ]),
-      instructor: faker.helpers.arrayElement([
-        'Dr. Ramesh Kumar',
-        'Prof. Sanjay Patel',
-        'Dr. Priya Sharma',
-        'Prof. Ajay Singh',
-        'Dr. Neha Gupta',
-        'Prof. Anita Desai'
-      ]),
-      subject: faker.helpers.arrayElement([
-        'Computer Science',
-        'Management',
-        'Finance',
-        'Marketing',
-        'Human Resources'
-      ]),
-      color: faker.helpers.arrayElement(colors),
-      pendingAssignments: faker.number.int({ min: 0, max: 4 })
-    });
-  }
-  
-  return courses;
-};
-
-// Store the generated data to keep it consistent
-const mockStudents = generateStudents(50);
-const mockTeachers = generateTeachers(15);
-const mockCourses = generateCourses(12);
-
-export { mockStudents, mockTeachers, mockCourses };
+// Teachers
+export const mockTeachers = [
+  {
+    id: '1',
+    name: 'Dr. Ramesh Kumar',
+    department: 'Computer Science',
+    subject: 'Programming',
+    email: 'ramesh.kumar@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t1',
+  },
+  {
+    id: '2',
+    name: 'Prof. Sanjay Patel',
+    department: 'Business Administration',
+    subject: 'Management',
+    email: 'sanjay.patel@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t2',
+  },
+  {
+    id: '3',
+    name: 'Dr. Priya Sharma',
+    department: 'Commerce',
+    subject: 'Accounting',
+    email: 'priya.sharma@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t3',
+  },
+  {
+    id: '4',
+    name: 'Prof. Anjali Gupta',
+    department: 'Marketing',
+    subject: 'Digital Marketing',
+    email: 'anjali.gupta@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t4',
+  },
+  {
+    id: '5',
+    name: 'Dr. Arjun Reddy',
+    department: 'Law',
+    subject: 'Business Law',
+    email: 'arjun.reddy@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t5',
+  },
+  {
+    id: '6',
+    name: 'Prof. Meera Desai',
+    department: 'Philosophy',
+    subject: 'Ethics',
+    email: 'meera.desai@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t6',
+  },
+  {
+    id: '7',
+    name: 'Dr. Rajiv Malhotra',
+    department: 'Economics',
+    subject: 'Microeconomics',
+    email: 'rajiv.malhotra@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t7',
+  },
+  {
+    id: '8',
+    name: 'Prof. Shikha Puri',
+    department: 'Statistics',
+    subject: 'Business Statistics',
+    email: 'shikha.puri@asbm.edu',
+    avatar: 'https://i.pravatar.cc/150?u=t8',
+  },
+];
