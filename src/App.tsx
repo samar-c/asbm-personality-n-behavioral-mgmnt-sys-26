@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Course from "./pages/Course";
 import Calendar from "./pages/Calendar";
 import Todo from "./pages/Todo";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App: React.FC = () => {
               <Route path="/course/:courseId" element={<Course />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/todo" element={<Todo />} />
+              <Route path="/reports" element={<Reports />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

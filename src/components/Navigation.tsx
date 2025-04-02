@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Bell, User } from 'lucide-react';
+import { Menu, X, Bell, User, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,6 +32,9 @@ const Navigation = () => {
                 <Link to="/todo" className="nav-link text-sm font-medium hover:underline">
                   To-do
                 </Link>
+                <Link to="/reports" className="nav-link text-sm font-medium hover:underline">
+                  Reports
+                </Link>
               </nav>
             </SheetContent>
           </Sheet>
@@ -48,6 +51,9 @@ const Navigation = () => {
           </Link>
           <Link to="/todo" className="nav-link text-sm font-medium">
             To-do
+          </Link>
+          <Link to="/reports" className="nav-link text-sm font-medium">
+            Reports
           </Link>
         </nav>
         <div className="flex items-center gap-4">
