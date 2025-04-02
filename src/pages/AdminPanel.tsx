@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   BarChart, Search, Plus, UserPlus, FileText, Filter, Download, ArrowUp, ArrowDown, 
   AlertTriangle, CheckCircle, User, UserCheck, Mail, Calendar, School,
-  Brain
+  Brain, Bell
 } from 'lucide-react';
 import { mockStudents, mockTeachers } from '@/utils/mockData';
 import { useAuth } from '@/context/AuthContext';
@@ -29,9 +29,10 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import { toast } from "@/hooks/use-toast";
 
 // Component for stats card with icon
-const StatsCard = ({ icon: Icon, title, value, description, className }) => (
+const StatsCard = ({ icon: Icon, title, value, description, className = "" }) => (
   <Card className={className}>
     <CardHeader className="flex flex-row items-center justify-between pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -109,11 +110,27 @@ const AdminPanel = () => {
       <ArrowDown className="h-4 w-4" />;
   };
 
+  const handleGenerateReport = (reportType) => {
+    toast({
+      title: `${reportType} Report Generated`,
+      description: "The report has been generated and is ready for download.",
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <img 
+          src="/lovable-uploads/7afce98d-f21c-40c0-a054-0b0431ca10c9.png" 
+          alt="ASBM University Campus" 
+          className="w-full h-full object-cover opacity-20" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-background/5"></div>
+      </div>
+      
       <Navigation />
       
-      <main className="flex-1 py-6 px-4 md:px-6 lg:px-8">
+      <main className="flex-1 py-6 px-4 md:px-6 lg:px-8 animate-fade-in">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
@@ -121,11 +138,11 @@ const AdminPanel = () => {
               <p className="text-muted-foreground">Manage student records and monitor behavior</p>
             </div>
             <div className="mt-4 sm:mt-0 flex gap-2">
-              <Button>
+              <Button className="transition-all duration-300 hover:scale-105">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add Student
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="transition-all duration-300 hover:bg-primary hover:text-primary-foreground">
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Report
               </Button>
@@ -139,36 +156,40 @@ const AdminPanel = () => {
               title="Total Students" 
               value={mockStudents.length} 
               description="Active students in the system"
+              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             />
             <StatsCard 
               icon={AlertTriangle} 
               title="At-Risk Students" 
               value={atRiskCount} 
               description={`${Math.round((atRiskCount / mockStudents.length) * 100)}% of total students`}
+              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             />
             <StatsCard 
               icon={Brain} 
               title="Behavior Incidents" 
               value={behaviorIncidentsCount} 
               description="Total incidents reported"
+              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             />
             <StatsCard 
               icon={UserCheck} 
               title="Average Attendance" 
               value={`${avgAttendance}%`} 
               description={avgAttendance >= 80 ? "Good overall attendance" : "Needs improvement"}
+              className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             />
           </div>
           
-          <Tabs defaultValue="students">
+          <Tabs defaultValue="students" className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="students">Students</TabsTrigger>
-              <TabsTrigger value="teachers">Faculty</TabsTrigger>
-              <TabsTrigger value="reports">Reports</TabsTrigger>
+              <TabsTrigger value="students" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Students</TabsTrigger>
+              <TabsTrigger value="teachers" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Faculty</TabsTrigger>
+              <TabsTrigger value="reports" className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Reports</TabsTrigger>
             </TabsList>
             
             {/* Students Tab */}
-            <TabsContent value="students">
+            <TabsContent value="students" className="animate-fade-in">
               <Card>
                 <CardHeader>
                   <CardTitle>Student Directory</CardTitle>
@@ -260,7 +281,7 @@ const AdminPanel = () => {
                       </TableHeader>
                       <TableBody>
                         {filteredStudents.map((student) => (
-                          <TableRow key={student.id}>
+                          <TableRow key={student.id} className="transition-colors hover:bg-muted/50">
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-8 w-8">
@@ -307,7 +328,7 @@ const AdminPanel = () => {
                               )}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" asChild>
+                              <Button variant="ghost" size="sm" asChild className="transition-colors hover:bg-primary/20">
                                 <Link to={`/admin/student/${student.id}`}>View</Link>
                               </Button>
                             </TableCell>
@@ -333,7 +354,7 @@ const AdminPanel = () => {
             </TabsContent>
             
             {/* Teachers Tab */}
-            <TabsContent value="teachers">
+            <TabsContent value="teachers" className="animate-fade-in">
               <Card>
                 <CardHeader>
                   <CardTitle>Faculty Directory</CardTitle>
@@ -353,7 +374,7 @@ const AdminPanel = () => {
                       </TableHeader>
                       <TableBody>
                         {mockTeachers.slice(0, 8).map((teacher) => (
-                          <TableRow key={teacher.id}>
+                          <TableRow key={teacher.id} className="transition-colors hover:bg-muted/50">
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-8 w-8">
@@ -372,7 +393,7 @@ const AdminPanel = () => {
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm">View</Button>
+                              <Button variant="ghost" size="sm" className="transition-colors hover:bg-primary/20">View</Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -384,7 +405,7 @@ const AdminPanel = () => {
             </TabsContent>
             
             {/* Reports Tab */}
-            <TabsContent value="reports">
+            <TabsContent value="reports" className="animate-fade-in">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -393,45 +414,45 @@ const AdminPanel = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
                         <div>
                           <h3 className="font-medium">Student Behavior Report</h3>
                           <p className="text-sm text-muted-foreground">Comprehensive behavior analysis</p>
                         </div>
-                        <Button>
+                        <Button onClick={() => handleGenerateReport('Student Behavior')} className="transition-transform hover:scale-105">
                           <FileText className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
                       </div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
                         <div>
                           <h3 className="font-medium">Attendance Report</h3>
                           <p className="text-sm text-muted-foreground">Student attendance trends</p>
                         </div>
-                        <Button>
+                        <Button onClick={() => handleGenerateReport('Attendance')} className="transition-transform hover:scale-105">
                           <Calendar className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
                       </div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
                         <div>
                           <h3 className="font-medium">Course Performance</h3>
                           <p className="text-sm text-muted-foreground">Academic performance by course</p>
                         </div>
-                        <Button>
+                        <Button onClick={() => handleGenerateReport('Course Performance')} className="transition-transform hover:scale-105">
                           <School className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
                       </div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md hover:border-primary">
                         <div>
                           <h3 className="font-medium">Behavioral Incident Log</h3>
                           <p className="text-sm text-muted-foreground">Complete incident history</p>
                         </div>
-                        <Button>
+                        <Button onClick={() => handleGenerateReport('Behavioral Incident Log')} className="transition-transform hover:scale-105">
                           <Brain className="mr-2 h-4 w-4" />
                           Generate
                         </Button>
@@ -447,34 +468,34 @@ const AdminPanel = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md">
                         <div>
                           <h3 className="font-medium">Monthly Behavior Summary</h3>
                           <p className="text-xs text-muted-foreground">Generated on 15 Oct 2023</p>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="transition-transform hover:scale-105">
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
                       </div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md">
                         <div>
                           <h3 className="font-medium">Semester Attendance Report</h3>
                           <p className="text-xs text-muted-foreground">Generated on 30 Sep 2023</p>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="transition-transform hover:scale-105">
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
                       </div>
                       
-                      <div className="p-4 border rounded-md flex justify-between items-center">
+                      <div className="p-4 border rounded-md flex justify-between items-center transition-all duration-300 hover:shadow-md">
                         <div>
                           <h3 className="font-medium">Academic Performance Trends</h3>
                           <p className="text-xs text-muted-foreground">Generated on 15 Sep 2023</p>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="transition-transform hover:scale-105">
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
@@ -482,7 +503,7 @@ const AdminPanel = () => {
                     </div>
                     
                     <div className="mt-6">
-                      <Link to="/reports" className="text-primary text-sm hover:underline flex items-center justify-center">
+                      <Link to="/reports" className="text-primary text-sm hover:underline flex items-center justify-center transition-transform hover:scale-105">
                         <BarChart className="h-4 w-4 mr-2" />
                         View Analytics Dashboard
                       </Link>
