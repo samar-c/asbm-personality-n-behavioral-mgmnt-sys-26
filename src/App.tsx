@@ -16,17 +16,17 @@ const AppRoutes: React.FC = () => {
   return <AnimatePresence mode="wait">{routeElements}</AnimatePresence>;
 };
 
-// Create a Query Client for React Query
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const App: React.FC = () => {
+  // Create a new QueryClient instance inside the component
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
